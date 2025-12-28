@@ -1,0 +1,2274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão Professional</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --color-primary: #1E3A5F;
+            --color-primary-light: #2E5A8F;
+            --color-primary-dark: #0F1F2F;
+            --color-secondary: #27AE60;
+            --color-secondary-light: #2ECC71;
+            --color-danger: #E74C3C;
+            --color-warning: #F39C12;
+            --color-info: #3498DB;
+            --color-bg: #F5F7FA;
+            --color-surface: #FFFFFF;
+            --color-text: #2C3E50;
+            --color-text-light: #7F8C8D;
+            --color-border: #E0E6ED;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition: all 0.2s ease;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: var(--color-bg); color: var(--color-text); line-height: 1.6; }
+        
+        /* Login Screen */
+        .login-container { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%); }
+        .login-box { background: var(--color-surface); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); width: 100%; max-width: 420px; }
+        .login-box h1 { font-size: 24px; margin-bottom: 8px; color: var(--color-primary); }
+        .login-box p { color: var(--color-text-light); margin-bottom: 24px; }
+        .login-box .logo { text-align: center; margin-bottom: 24px; font-size: 32px; font-weight: 700; color: var(--color-primary); }
+        
+        /* Form Elements */
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 500; font-size: 14px; color: var(--color-text); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 14px; font-family: inherit; transition: var(--transition); }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(30,58,95,0.1); }
+        
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; font-family: inherit; cursor: pointer; transition: var(--transition); }
+        .btn-primary { background: var(--color-primary); color: white; }
+        .btn-primary:hover { background: var(--color-primary-light); transform: translateY(-1px); }
+        .btn-success { background: var(--color-secondary); color: white; }
+        .btn-success:hover { background: var(--color-secondary-light); }
+        .btn-danger { background: var(--color-danger); color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-warning { background: var(--color-warning); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--color-border); color: var(--color-text); }
+        .btn-outline:hover { background: var(--color-bg); }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-block { width: 100%; }
+        
+        /* Layout */
+        .app-container { display: none; min-height: 100vh; }
+        .app-container.active { display: flex; }
+        .sidebar { width: 260px; background: var(--color-primary); color: white; display: flex; flex-direction: column; position: fixed; height: 100vh; z-index: 100; }
+        .sidebar-header { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-header h2 { font-size: 18px; font-weight: 600; }
+        .sidebar-header span { font-size: 12px; opacity: 0.7; }
+        .sidebar-nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: rgba(255,255,255,0.8); cursor: pointer; transition: var(--transition); font-size: 14px; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
+        .nav-item.active { border-left: 3px solid var(--color-secondary); }
+        .nav-item svg { width: 20px; height: 20px; }
+        .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--color-secondary); display: flex; align-items: center; justify-content: center; font-weight: 600; }
+        .user-details h4 { font-size: 14px; font-weight: 500; }
+        .user-details span { font-size: 12px; opacity: 0.7; }
+        
+        /* Main Content */
+        .main-content { flex: 1; margin-left: 260px; padding: 24px; min-height: 100vh; }
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .page-header h1 { font-size: 24px; font-weight: 600; color: var(--color-primary); }
+        .page-header .actions { display: flex; gap: 12px; }
+        
+        /* Cards */
+        .card { background: var(--color-surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--color-border); }
+        .card-header { padding: 16px 20px; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; }
+        .card-header h3 { font-size: 16px; font-weight: 600; }
+        .card-body { padding: 20px; }
+        
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        .stat-card { background: var(--color-surface); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm); border: 1px solid var(--color-border); display: flex; align-items: flex-start; gap: 16px; }
+        .stat-icon { width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
+        .stat-icon.blue { background: rgba(52,152,219,0.1); color: var(--color-info); }
+        .stat-icon.green { background: rgba(39,174,96,0.1); color: var(--color-secondary); }
+        .stat-icon.orange { background: rgba(243,156,18,0.1); color: var(--color-warning); }
+        .stat-icon.red { background: rgba(231,76,60,0.1); color: var(--color-danger); }
+        .stat-content h3 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+        .stat-content p { font-size: 14px; color: var(--color-text-light); }
+        .stat-trend { font-size: 12px; margin-top: 8px; }
+        .stat-trend.positive { color: var(--color-secondary); }
+        .stat-trend.negative { color: var(--color-danger); }
+        
+        /* Tables */
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--color-border); }
+        th { font-weight: 600; font-size: 13px; color: var(--color-text-light); text-transform: uppercase; letter-spacing: 0.5px; background: var(--color-bg); }
+        tr:hover { background: var(--color-bg); }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .badge-success { background: rgba(39,174,96,0.1); color: var(--color-secondary); }
+        .badge-warning { background: rgba(243,156,18,0.1); color: var(--color-warning); }
+        .badge-danger { background: rgba(231,76,60,0.1); color: var(--color-danger); }
+        .badge-info { background: rgba(52,152,219,0.1); color: var(--color-info); }
+        
+        /* Search & Filters */
+        .search-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .search-input { flex: 1; min-width: 200px; position: relative; }
+        .search-input input { width: 100%; padding: 10px 14px 10px 40px; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 14px; }
+        .search-input svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--color-text-light); }
+        .filter-group { display: flex; gap: 12px; }
+        
+        /* Tabs */
+        .tabs { display: flex; border-bottom: 1px solid var(--color-border); margin-bottom: 20px; }
+        .tab { padding: 12px 20px; cursor: pointer; border-bottom: 2px solid transparent; font-weight: 500; color: var(--color-text-light); transition: var(--transition); }
+        .tab:hover { color: var(--color-primary); }
+        .tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+        
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: var(--color-surface); border-radius: var(--radius-lg); width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
+        .modal-header { padding: 20px; border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { font-size: 18px; font-weight: 600; }
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--color-text-light); }
+        .modal-body { padding: 20px; }
+        .modal-footer { padding: 16px 20px; border-top: 1px solid var(--color-border); display: flex; justify-content: flex-end; gap: 12px; }
+        
+        /* Toast */
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: var(--color-surface); padding: 14px 20px; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 12px; min-width: 300px; animation: slideIn 0.3s ease; }
+        .toast.success { border-left: 4px solid var(--color-secondary); }
+        .toast.error { border-left: 4px solid var(--color-danger); }
+        .toast.warning { border-left: 4px solid var(--color-warning); }
+        .toast.info { border-left: 4px solid var(--color-info); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        /* Charts Grid */
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        .chart-container { height: 300px; position: relative; }
+        
+        /* Reports Section */
+        .report-filters { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; align-items: flex-end; }
+        .report-filters .form-group { margin-bottom: 0; }
+        .report-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .summary-item { text-align: center; padding: 20px; background: var(--color-bg); border-radius: var(--radius-md); }
+        .summary-item h4 { font-size: 28px; font-weight: 700; color: var(--color-primary); }
+        .summary-item p { font-size: 14px; color: var(--color-text-light); margin-top: 4px; }
+        
+        /* Log Viewer */
+        .log-filters { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+        .log-entry { display: flex; align-items: flex-start; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--color-border); }
+        .log-icon { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .log-icon.create { background: rgba(39,174,96,0.1); color: var(--color-secondary); }
+        .log-icon.update { background: rgba(52,152,219,0.1); color: var(--color-info); }
+        .log-icon.delete { background: rgba(231,76,60,0.1); color: var(--color-danger); }
+        .log-icon.login { background: rgba(243,156,18,0.1); color: var(--color-warning); }
+        .log-content { flex: 1; }
+        .log-content h4 { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+        .log-content p { font-size: 13px; color: var(--color-text-light); }
+        .log-time { font-size: 12px; color: var(--color-text-light); white-space: nowrap; }
+        
+        /* User Management */
+        .user-permissions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .permission-tag { padding: 4px 8px; background: var(--color-bg); border-radius: var(--radius-sm); font-size: 12px; }
+        .permission-tag.allowed { background: rgba(39,174,96,0.1); color: var(--color-secondary); }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); transition: var(--transition); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .charts-grid { grid-template-columns: 1fr; }
+        }
+        
+        /* Hidden */
+        .hidden { display: none !important; }
+        
+        /* Grid Layouts */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        
+        @media (max-width: 600px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-box">
+            <div class="logo">📊 SG Pro</div>
+            <h1>Sistema de Gestão Professional</h1>
+            <p>Faça login para acessar o sistema</p>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Usuário</label>
+                    <input type="text" id="loginUsername" placeholder="Digite seu usuário" required>
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" id="loginPassword" placeholder="Digite sua senha" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+            </form>
+            <p style="margin-top: 16px; font-size: 12px; color: var(--color-text-light); text-align: center;">
+                Demo: admin/admin | operador/operador
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div class="app-container" id="appContainer">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📊 SG Pro</h2>
+                <span>Sistema de Gestão</span>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-page="dashboard">📈 Dashboard</div>
+                <div class="nav-item" data-page="produtos">📦 Produtos</div>
+                <div class="nav-item" data-page="vendas">💰 Vendas</div>
+                <div class="nav-item" data-page="despesas">📋 Despesas</div>
+                <div class="nav-item" data-page="relatorios">📊 Relatórios</div>
+                <div class="nav-item" data-page="usuarios" id="navUsuarios">👥 Usuários</div>
+                <div class="nav-item" data-page="logs" id="navLogs">📜 Registros</div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">A</div>
+                    <div class="user-details">
+                        <h4 id="userName">Admin</h4>
+                        <span id="userRole">Administrador</span>
+                    </div>
+                </div>
+                <button class="btn btn-outline btn-block" onclick="App.logout()">Sair</button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard -->
+            <section id="page-dashboard" class="page">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <div class="actions">
+                        <button class="btn btn-outline" onclick="App.exportData()">💾 Backup</button>
+                        <button class="btn btn-primary" onclick="App.showPage('vendas')">+ Nova Venda</button>
+                    </div>
+                </div>
+                <div class="stats-grid" id="dashboardStats"></div>
+                <div class="charts-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Receitas vs Despesas</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="chartFinanceiro"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Produtos Mais Vendidos</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="chartProdutos"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Vendas Recentes</h3>
+                        <button class="btn btn-sm btn-outline" onclick="App.showPage('vendas')">Ver todas</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Produtos</th>
+                                        <th>Total</th>
+                                        <th>Data</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentSalesTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Produtos -->
+            <section id="page-produtos" class="page hidden">
+                <div class="page-header">
+                    <h1>Produtos</h1>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="App.openProductModal()">+ Novo Produto</button>
+                    </div>
+                </div>
+                <div class="search-bar">
+                    <div class="search-input">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
+                        <input type="text" id="searchProducts" placeholder="Buscar produtos..." oninput="App.searchProducts(this.value)">
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nome</th>
+                                        <th>Categoria</th>
+                                        <th>Preço Custo</th>
+                                        <th>Preço Venda</th>
+                                        <th>Estoque</th>
+                                        <th>Margem</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productsTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Vendas -->
+            <section id="page-vendas" class="page hidden">
+                <div class="page-header">
+                    <h1>Vendas</h1>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="App.openSaleModal()">+ Nova Venda</button>
+                    </div>
+                </div>
+                <div class="search-bar">
+                    <div class="search-input">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
+                        <input type="text" id="searchSales" placeholder="Buscar vendas..." oninput="App.searchSales(this.value)">
+                    </div>
+                    <div class="filter-group">
+                        <input type="date" id="filterDateStart" onchange="App.filterSales()">
+                        <input type="date" id="filterDateEnd" onchange="App.filterSales()">
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Custo</th>
+                                        <th>Lucro</th>
+                                        <th>Data</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="salesTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Despesas -->
+            <section id="page-despesas" class="page hidden">
+                <div class="page-header">
+                    <h1>Despesas</h1>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="App.openExpenseModal()">+ Nova Despesa</button>
+                    </div>
+                </div>
+                <div class="search-bar">
+                    <div class="search-input">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
+                        <input type="text" id="searchExpenses" placeholder="Buscar despesas..." oninput="App.searchExpenses(this.value)">
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Descrição</th>
+                                        <th>Categoria</th>
+                                        <th>Valor</th>
+                                        <th>Data</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expensesTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Relatórios -->
+            <section id="page-relatorios" class="page hidden">
+                <div class="page-header">
+                    <h1>Relatórios</h1>
+                    <div class="actions">
+                        <button class="btn btn-outline" onclick="App.exportPDF()">📄 Exportar PDF</button>
+                        <button class="btn btn-success" onclick="App.exportCSV()">📊 Exportar CSV</button>
+                    </div>
+                </div>
+                <div class="report-filters">
+                    <div class="form-group">
+                        <label>Data Inicial</label>
+                        <input type="date" id="reportDateStart" onchange="App.generateReport()">
+                    </div>
+                    <div class="form-group">
+                        <label>Data Final</label>
+                        <input type="date" id="reportDateEnd" onchange="App.generateReport()">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Relatório</label>
+                        <select id="reportType" onchange="App.generateReport()">
+                            <option value="financeiro">Financeiro</option>
+                            <option value="vendas">Vendas</option>
+                            <option value="estoque">Estoque</option>
+                            <option value="lucro">Lucro</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="App.generateReport()">Gerar Relatório</button>
+                </div>
+                <div id="reportContent"></div>
+            </section>
+
+            <!-- Usuários -->
+            <section id="page-usuarios" class="page hidden">
+                <div class="page-header">
+                    <h1>Gerenciamento de Usuários</h1>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="App.openUserModal()">+ Novo Usuário</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Usuário</th>
+                                        <th>Nome</th>
+                                        <th>Email</th>
+                                        <th>Perfil</th>
+                                        <th>Último Login</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Logs -->
+            <section id="page-logs" class="page hidden">
+                <div class="page-header">
+                    <h1>Registro de Alterações</h1>
+                    <div class="actions">
+                        <button class="btn btn-outline" onclick="App.clearLogs()">Limpar Logs</button>
+                        <button class="btn btn-primary" onclick="App.exportLogs()">Exportar Logs</button>
+                    </div>
+                </div>
+                <div class="log-filters">
+                    <select id="filterLogType" onchange="App.filterLogs()">
+                        <option value="all">Todos os tipos</option>
+                        <option value="create">Criação</option>
+                        <option value="update">Edição</option>
+                        <option value="delete">Exclusão</option>
+                        <option value="login">Login</option>
+                    </select>
+                    <select id="filterLogModule" onchange="App.filterLogs()">
+                        <option value="all">Todos os módulos</option>
+                        <option value="produtos">Produtos</option>
+                        <option value="vendas">Vendas</option>
+                        <option value="despesas">Despesas</option>
+                        <option value="usuarios">Usuários</option>
+                    </select>
+                    <input type="date" id="filterLogDate" onchange="App.filterLogs()">
+                </div>
+                <div class="card">
+                    <div class="card-body" id="logsContainer"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Product Modal -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="productModalTitle">Novo Produto</h2>
+                <button class="modal-close" onclick="App.closeModal('productModal')">&times;</button>
+            </div>
+            <form id="productForm" onsubmit="App.saveProduct(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="productId">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Código</label>
+                            <input type="text" id="productCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Categoria</label>
+                            <select id="productCategory" required>
+                                <option value="">Selecione...</option>
+                                <option value="Eletrônicos">Eletrônicos</option>
+                                <option value="Roupas">Roupas</option>
+                                <option value="Alimentos">Alimentos</option>
+                                <option value="Bebidas">Bebidas</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do Produto</label>
+                        <input type="text" id="productName" required>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Preço de Custo</label>
+                            <input type="number" id="productCost" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Preço de Venda</label>
+                            <input type="number" id="productPrice" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantidade em Estoque</label>
+                        <input type="number" id="productStock" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <textarea id="productDescription" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="App.closeModal('productModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sale Modal -->
+    <div class="modal-overlay" id="saleModal">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>Nova Venda</h2>
+                <button class="modal-close" onclick="App.closeModal('saleModal')">&times;</button>
+            </div>
+            <form id="saleForm" onsubmit="App.saveSale(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <input type="text" id="saleClient" placeholder="Nome do cliente" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Produto</label>
+                        <select id="saleProduct" onchange="App.addProductToSale()" required>
+                            <option value="">Selecione um produto...</option>
+                        </select>
+                    </div>
+                    <div class="card" style="margin-bottom: 16px;">
+                        <div class="card-body">
+                            <h4 style="margin-bottom: 12px;">Itens da Venda</h4>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Produto</th>
+                                            <th>Qty</th>
+                                            <th>Unitário</th>
+                                            <th>Total</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="saleItems"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align: right; font-size: 18px; font-weight: 600;">
+                        Total: R$ <span id="saleTotal">0,00</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="App.closeModal('saleModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Finalizar Venda</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Expense Modal -->
+    <div class="modal-overlay" id="expenseModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Nova Despesa</h2>
+                <button class="modal-close" onclick="App.closeModal('expenseModal')">&times;</button>
+            </div>
+            <form id="expenseForm" onsubmit="App.saveExpense(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <input type="text" id="expenseDescription" required>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Categoria</label>
+                            <select id="expenseCategory" required>
+                                <option value="">Selecione...</option>
+                                <option value="Aluguel">Aluguel</option>
+                                <option value="Salários">Salários</option>
+                                <option value="Fornecedores">Fornecedores</option>
+                                <option value="Utilidades">Utilidades</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Manutenção">Manutenção</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Valor</label>
+                            <input type="number" id="expenseValue" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Data</label>
+                        <input type="date" id="expenseDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Observações</label>
+                        <textarea id="expenseNotes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="App.closeModal('expenseModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Modal -->
+    <div class="modal-overlay" id="userModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="userModalTitle">Novo Usuário</h2>
+                <button class="modal-close" onclick="App.closeModal('userModal')">&times;</button>
+            </div>
+            <form id="userForm" onsubmit="App.saveUser(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="userId">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="userUsername" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Perfil de Acesso</label>
+                            <select id="userProfile" required onchange="App.updatePermissionsDisplay()">
+                                <option value="admin">Administrador</option>
+                                <option value="manager">Gerente</option>
+                                <option value="operator">Operador</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Nome Completo</label>
+                            <input type="text" id="userFullName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="userEmail" required>
+                        </div>
+                    </div>
+                    <div class="form-group" id="passwordGroup">
+                        <label>Senha</label>
+                        <input type="password" id="userPassword">
+                        <small style="color: var(--color-text-light);">Deixe em branco para manter a senha atual (em edições)</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Permissões</label>
+                        <div class="user-permissions" id="permissionsDisplay">
+                            <span class="permission-tag allowed">Ver Dashboard</span>
+                            <span class="permission-tag allowed">Gerenciar Produtos</span>
+                            <span class="permission-tag allowed">Gerenciar Vendas</span>
+                            <span class="permission-tag allowed">Gerenciar Despesas</span>
+                            <span class="permission-tag allowed">Ver Relatórios</span>
+                            <span class="permission-tag allowed" id="permUsers">Gerenciar Usuários</span>
+                            <span class="permission-tag allowed" id="permLogs">Ver Logs</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="App.closeModal('userModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Sale Modal -->
+    <div class="modal-overlay" id="viewSaleModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Detalhes da Venda</h2>
+                <button class="modal-close" onclick="App.closeModal('viewSaleModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="viewSaleContent"></div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="App.closeModal('viewSaleModal')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // Store - Gerenciamento de Estado
+        // ========================================
+        const Store = {
+            currentUser: null,
+            products: [],
+            sales: [],
+            expenses: [],
+            users: [],
+            logs: [],
+            
+            init() {
+                this.loadFromStorage();
+                this.initializeDefaultUsers();
+                this.loadLogs();
+            },
+            
+            loadFromStorage() {
+                const savedProducts = localStorage.getItem('sgpro_products');
+                const savedSales = localStorage.getItem('sgpro_sales');
+                const savedExpenses = localStorage.getItem('sgpro_expenses');
+                const savedUsers = localStorage.getItem('sgpro_users');
+                const savedLogs = localStorage.getItem('sgpro_logs');
+                
+                this.products = savedProducts ? JSON.parse(savedProducts) : [];
+                this.sales = savedSales ? JSON.parse(savedSales) : [];
+                this.expenses = savedExpenses ? JSON.parse(savedExpenses) : [];
+                this.users = savedUsers ? JSON.parse(savedUsers) : [];
+                this.logs = savedLogs ? JSON.parse(savedLogs) : [];
+            },
+            
+            saveToStorage() {
+                localStorage.setItem('sgpro_products', JSON.stringify(this.products));
+                localStorage.setItem('sgpro_sales', JSON.stringify(this.sales));
+                localStorage.setItem('sgpro_expenses', JSON.stringify(this.expenses));
+                localStorage.setItem('sgpro_users', JSON.stringify(this.users));
+                localStorage.setItem('sgpro_logs', JSON.stringify(this.logs));
+            },
+            
+            initializeDefaultUsers() {
+                if (this.users.length === 0) {
+                    this.users = [
+                        {
+                            id: 'user_1',
+                            username: 'admin',
+                            password: 'admin',
+                            fullName: 'Administrador do Sistema',
+                            email: 'admin@sistema.com',
+                            profile: 'admin',
+                            active: true,
+                            lastLogin: null
+                        },
+                        {
+                            id: 'user_2',
+                            username: 'operador',
+                            password: 'operador',
+                            fullName: 'Operador Padrão',
+                            email: 'operador@sistema.com',
+                            profile: 'operator',
+                            active: true,
+                            lastLogin: null
+                        }
+                    ];
+                    this.saveToStorage();
+                }
+            },
+            
+            addLog(action, module, details, userId = null, userName = 'Sistema') {
+                const log = {
+                    id: 'log_' + Date.now(),
+                    timestamp: new Date().toISOString(),
+                    action,
+                    module,
+                    details,
+                    userId: userId || (this.currentUser ? this.currentUser.id : null),
+                    userName: userName || (this.currentUser ? this.currentUser.fullName : 'Sistema')
+                };
+                this.logs.unshift(log);
+                if (this.logs.length > 1000) this.logs.pop();
+                this.saveToStorage();
+                return log;
+            },
+            
+            loadLogs() {
+                // Logs já são carregados do localStorage
+            }
+        };
+
+        // ========================================
+        // Utils - Funções Utilitárias
+        // ========================================
+        const Utils = {
+            formatCurrency(value) {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(value);
+            },
+            
+            formatDate(dateString) {
+                if (!dateString) return '-';
+                return new Date(dateString).toLocaleDateString('pt-BR');
+            },
+            
+            formatDateTime(dateString) {
+                if (!dateString) return '-';
+                const date = new Date(dateString);
+                return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
+            },
+            
+            generateId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            },
+            
+            calculateMargin(cost, price) {
+                if (!cost || cost === 0) return 0;
+                return ((price - cost) / cost * 100).toFixed(1);
+            },
+            
+            getMonthName(monthIndex) {
+                const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                return months[monthIndex];
+            },
+            
+            getLastMonths(count = 6) {
+                const months = [];
+                for (let i = count - 1; i >= 0; i--) {
+                    const date = new Date();
+                    date.setMonth(date.getMonth() - i);
+                    months.push({
+                        month: date.getMonth(),
+                        year: date.getFullYear(),
+                        label: this.getMonthName(date.getMonth()) + '/' + date.getFullYear().toString().substr(2)
+                    });
+                }
+                return months;
+            }
+        };
+
+        // ========================================
+        // Toast - Sistema de Notificações
+        // ========================================
+        const Toast = {
+            show(message, type = 'info', duration = 4000) {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                
+                const icons = {
+                    success: '✓',
+                    error: '✕',
+                    warning: '⚠',
+                    info: 'ℹ'
+                };
+                
+                toast.innerHTML = `
+                    <span style="font-size: 18px;">${icons[type] || icons.info}</span>
+                    <span>${message}</span>
+                `;
+                
+                container.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.style.animation = 'slideIn 0.3s ease reverse';
+                    setTimeout(() => toast.remove(), 300);
+                }, duration);
+            }
+        };
+
+        // ========================================
+        // Modal - Gerenciamento de Modais
+        // ========================================
+        const Modal = {
+            open(modalId) {
+                document.getElementById(modalId).classList.add('active');
+            },
+            
+            close(modalId) {
+                document.getElementById(modalId).classList.remove('active');
+            },
+            
+            closeAll() {
+                document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+            }
+        };
+
+        // ========================================
+        // App - Aplicação Principal
+        // ========================================
+        const App = {
+            charts: {},
+            saleItems: [],
+            
+            init() {
+                Store.init();
+                this.setupEventListeners();
+                this.checkAuth();
+            },
+            
+            setupEventListeners() {
+                // Login form
+                document.getElementById('loginForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.login();
+                });
+                
+                // Navigation
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const page = item.dataset.page;
+                        if (page) this.showPage(page);
+                    });
+                });
+                
+                // Set default dates
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('reportDateStart').value = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                document.getElementById('reportDateEnd').value = today;
+                document.getElementById('expenseDate').value = today;
+            },
+            
+            checkAuth() {
+                const savedUser = localStorage.getItem('sgpro_currentUser');
+                if (savedUser) {
+                    Store.currentUser = JSON.parse(savedUser);
+                    this.showApp();
+                } else {
+                    document.getElementById('loginScreen').style.display = 'flex';
+                    document.getElementById('appContainer').classList.remove('active');
+                }
+            },
+            
+            login() {
+                const username = document.getElementById('loginUsername').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                const user = Store.users.find(u => u.username === username && u.password === password);
+                
+                if (user) {
+                    if (!user.active) {
+                        Toast.show('Usuário inativo. Contate o administrador.', 'error');
+                        return;
+                    }
+                    
+                    user.lastLogin = new Date().toISOString();
+                    Store.currentUser = user;
+                    localStorage.setItem('sgpro_currentUser', JSON.stringify(user));
+                    Store.saveToStorage();
+                    
+                    Store.addLog('login', 'usuarios', `Login realizado com sucesso`, user.id, user.fullName);
+                    
+                    Toast.show('Login realizado com sucesso!', 'success');
+                    this.showApp();
+                } else {
+                    Toast.show('Usuário ou senha inválidos.', 'error');
+                    Store.addLog('login', 'usuarios', `Falha de login para usuário: ${username}`);
+                }
+            },
+            
+            logout() {
+                const userName = Store.currentUser ? Store.currentUser.fullName : 'Unknown';
+                Store.addLog('login', 'usuarios', `Logout realizado`, Store.currentUser?.id, userName);
+                
+                Store.currentUser = null;
+                localStorage.removeItem('sgpro_currentUser');
+                document.getElementById('loginScreen').style.display = 'flex';
+                document.getElementById('appContainer').classList.remove('active');
+                document.getElementById('loginUsername').value = '';
+                document.getElementById('loginPassword').value = '';
+                Toast.show('Logout realizado com sucesso.', 'info');
+            },
+            
+            showApp() {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContainer').classList.add('active');
+                
+                // Update user info
+                const user = Store.currentUser;
+                document.getElementById('userAvatar').textContent = user.fullName.charAt(0).toUpperCase();
+                document.getElementById('userName').textContent = user.fullName;
+                
+                const roleNames = { admin: 'Administrador', manager: 'Gerente', operator: 'Operador' };
+                document.getElementById('userRole').textContent = roleNames[user.profile] || user.profile;
+                
+                // Check permissions
+                const canManageUsers = user.profile === 'admin';
+                const canViewLogs = user.profile !== 'operator';
+                
+                document.getElementById('navUsuarios').style.display = canManageUsers ? 'flex' : 'none';
+                document.getElementById('navLogs').style.display = canViewLogs ? 'flex' : 'none';
+                
+                this.showPage('dashboard');
+            },
+            
+            showPage(pageName) {
+                // Update nav
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    item.classList.remove('active');
+                    if (item.dataset.page === pageName) item.classList.add('active');
+                });
+                
+                // Update pages
+                document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'));
+                document.getElementById('page-' + pageName).classList.remove('hidden');
+                
+                // Load page data
+                switch(pageName) {
+                    case 'dashboard': this.loadDashboard(); break;
+                    case 'produtos': this.loadProducts(); break;
+                    case 'vendas': this.loadSales(); break;
+                    case 'despesas': this.loadExpenses(); break;
+                    case 'relatorios': this.loadReports(); break;
+                    case 'usuarios': this.loadUsers(); break;
+                    case 'logs': this.loadLogs(); break;
+                }
+            },
+            
+            // ========== Dashboard ==========
+            loadDashboard() {
+                this.updateDashboardStats();
+                this.renderRecentSales();
+                this.initCharts();
+            },
+            
+            updateDashboardStats() {
+                const totalSales = Store.sales.reduce((sum, s) => sum + s.total, 0);
+                const totalCost = Store.sales.reduce((sum, s) => sum + s.cost, 0);
+                const profit = totalSales - totalCost;
+                const totalExpenses = Store.expenses.reduce((sum, e) => sum + e.value, 0);
+                const netProfit = profit - totalExpenses;
+                const lowStock = Store.products.filter(p => p.stock < 10).length;
+                
+                const container = document.getElementById('dashboardStats');
+                container.innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-icon blue">💰</div>
+                        <div class="stat-content">
+                            <h3>${Utils.formatCurrency(totalSales)}</h3>
+                            <p>Receita Total</p>
+                            <div class="stat-trend positive">${Store.sales.length} vendas realizadas</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">📈</div>
+                        <div class="stat-content">
+                            <h3>${Utils.formatCurrency(profit)}</h3>
+                            <p>Lucro Bruto</p>
+                            <div class="stat-trend">Margem: ${totalSales > 0 ? ((profit/totalSales)*100).toFixed(1) : 0}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange">📋</div>
+                        <div class="stat-content">
+                            <h3>${Utils.formatCurrency(totalExpenses)}</h3>
+                            <p>Despesas Totais</p>
+                            <div class="stat-trend">${Store.expenses.length} registros</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon ${lowStock > 0 ? 'red' : 'green'}">📦</div>
+                        <div class="stat-content">
+                            <h3>${Store.products.length}</h3>
+                            <p>Produtos em Estoque</p>
+                            <div class="stat-trend ${lowStock > 0 ? 'negative' : 'positive'}">${lowStock} abaixo do mínimo</div>
+                        </div>
+                    </div>
+                `;
+            },
+            
+            renderRecentSales() {
+                const tbody = document.getElementById('recentSalesTable');
+                const recent = Store.sales.slice(0, 5);
+                
+                tbody.innerHTML = recent.map(sale => `
+                    <tr>
+                        <td>#${sale.id.substring(0, 8)}</td>
+                        <td>${sale.client}</td>
+                        <td>${sale.items.length} itens</td>
+                        <td>${Utils.formatCurrency(sale.total)}</td>
+                        <td>${Utils.formatDate(sale.date)}</td>
+                        <td><span class="badge badge-success">Concluída</span></td>
+                    </tr>
+                `).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--color-text-light);">Nenhuma venda realizada</td></tr>';
+            },
+            
+            initCharts() {
+                // Financial Chart
+                const ctx1 = document.getElementById('chartFinanceiro').getContext('2d');
+                if (this.charts.financeiro) this.charts.financeiro.destroy();
+                
+                const months = Utils.getLastMonths(6);
+                const salesByMonth = months.map(m => {
+                    return Store.sales.filter(s => {
+                        const saleDate = new Date(s.date);
+                        return saleDate.getMonth() === m.month && saleDate.getFullYear() === m.year;
+                    }).reduce((sum, s) => sum + s.total, 0);
+                });
+                const expensesByMonth = months.map(m => {
+                    return Store.expenses.filter(e => {
+                        const expDate = new Date(e.date);
+                        return expDate.getMonth() === m.month && expDate.getFullYear() === m.year;
+                    }).reduce((sum, e) => sum + e.value, 0);
+                });
+                
+                this.charts.financeiro = new Chart(ctx1, {
+                    type: 'line',
+                    data: {
+                        labels: months.map(m => m.label),
+                        datasets: [{
+                            label: 'Receitas',
+                            data: salesByMonth,
+                            borderColor: '#27AE60',
+                            backgroundColor: 'rgba(39,174,96,0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }, {
+                            label: 'Despesas',
+                            data: expensesByMonth,
+                            borderColor: '#E74C3C',
+                            backgroundColor: 'rgba(231,76,60,0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top' }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, ticks: { callback: v => 'R$' + v } }
+                        }
+                    }
+                });
+                
+                // Products Chart
+                const ctx2 = document.getElementById('chartProdutos').getContext('2d');
+                if (this.charts.produtos) this.charts.produtos.destroy();
+                
+                const productSales = {};
+                Store.sales.forEach(sale => {
+                    sale.items.forEach(item => {
+                        productSales[item.name] = (productSales[item.name] || 0) + item.quantity;
+                    });
+                });
+                
+                const topProducts = Object.entries(productSales)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5);
+                
+                this.charts.produtos = new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: topProducts.map(p => p[0]),
+                        datasets: [{
+                            data: topProducts.map(p => p[1]),
+                            backgroundColor: ['#1E3A5F', '#27AE60', '#F39C12', '#E74C3C', '#3498DB']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right' }
+                        }
+                    }
+                });
+            },
+            
+            // ========== Products ==========
+            loadProducts() {
+                this.renderProducts(Store.products);
+            },
+            
+            renderProducts(products) {
+                const tbody = document.getElementById('productsTable');
+                tbody.innerHTML = products.map(p => {
+                    const margin = Utils.calculateMargin(p.cost, p.price);
+                    const stockClass = p.stock < 10 ? 'badge-danger' : p.stock < 30 ? 'badge-warning' : 'badge-success';
+                    return `
+                        <tr>
+                            <td>${p.code}</td>
+                            <td>${p.name}</td>
+                            <td>${p.category}</td>
+                            <td>${Utils.formatCurrency(p.cost)}</td>
+                            <td>${Utils.formatCurrency(p.price)}</td>
+                            <td><span class="badge ${stockClass}">${p.stock}</span></td>
+                            <td>${margin}%</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline" onclick="App.editProduct('${p.id}')">✏️</button>
+                                <button class="btn btn-sm btn-danger" onclick="App.deleteProduct('${p.id}')">🗑️</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--color-text-light);">Nenhum produto cadastrado</td></tr>';
+            },
+            
+            searchProducts(query) {
+                const filtered = Store.products.filter(p => 
+                    p.name.toLowerCase().includes(query.toLowerCase()) ||
+                    p.code.toLowerCase().includes(query.toLowerCase()) ||
+                    p.category.toLowerCase().includes(query.toLowerCase())
+                );
+                this.renderProducts(filtered);
+            },
+            
+            openProductModal(product = null) {
+                document.getElementById('productModalTitle').textContent = product ? 'Editar Produto' : 'Novo Produto';
+                document.getElementById('productForm').reset();
+                
+                if (product) {
+                    document.getElementById('productId').value = product.id;
+                    document.getElementById('productCode').value = product.code;
+                    document.getElementById('productName').value = product.name;
+                    document.getElementById('productCategory').value = product.category;
+                    document.getElementById('productCost').value = product.cost;
+                    document.getElementById('productPrice').value = product.price;
+                    document.getElementById('productStock').value = product.stock;
+                    document.getElementById('productDescription').value = product.description || '';
+                } else {
+                    document.getElementById('productId').value = '';
+                }
+                
+                Modal.open('productModal');
+            },
+            
+            editProduct(id) {
+                const product = Store.products.find(p => p.id === id);
+                if (product) this.openProductModal(product);
+            },
+            
+            saveProduct(e) {
+                e.preventDefault();
+                
+                const id = document.getElementById('productId').value;
+                const productData = {
+                    code: document.getElementById('productCode').value,
+                    name: document.getElementById('productName').value,
+                    category: document.getElementById('productCategory').value,
+                    cost: parseFloat(document.getElementById('productCost').value),
+                    price: parseFloat(document.getElementById('productPrice').value),
+                    stock: parseInt(document.getElementById('productStock').value),
+                    description: document.getElementById('productDescription').value
+                };
+                
+                if (id) {
+                    const index = Store.products.findIndex(p => p.id === id);
+                    const oldProduct = Store.products[index];
+                    Store.products[index] = { ...oldProduct, ...productData };
+                    Store.addLog('update', 'produtos', `Produto atualizado: ${productData.name} (Código: ${productData.code})`, Store.currentUser.id, Store.currentUser.fullName);
+                    Toast.show('Produto atualizado com sucesso!', 'success');
+                } else {
+                    productData.id = Utils.generateId();
+                    Store.products.push(productData);
+                    Store.addLog('create', 'produtos', `Produto criado: ${productData.name} (Código: ${productData.code})`, Store.currentUser.id, Store.currentUser.fullName);
+                    Toast.show('Produto criado com sucesso!', 'success');
+                }
+                
+                Store.saveToStorage();
+                Modal.close('productModal');
+                this.loadProducts();
+                this.updateDashboardStats();
+            },
+            
+            deleteProduct(id) {
+                const product = Store.products.find(p => p.id === id);
+                if (confirm(`Tem certeza que deseja excluir "${product.name}"?`)) {
+                    Store.products = Store.products.filter(p => p.id !== id);
+                    Store.addLog('delete', 'produtos', `Produto excluído: ${product.name} (Código: ${product.code})`, Store.currentUser.id, Store.currentUser.fullName);
+                    Store.saveToStorage();
+                    Toast.show('Produto excluído com sucesso!', 'success');
+                    this.loadProducts();
+                    this.updateDashboardStats();
+                }
+            },
+            
+            // ========== Sales ==========
+            loadSales() {
+                this.renderSales(Store.sales);
+            },
+            
+            renderSales(sales) {
+                const tbody = document.getElementById('salesTable');
+                tbody.innerHTML = sales.map(sale => {
+                    const profit = sale.total - sale.cost;
+                    return `
+                        <tr>
+                            <td>#${sale.id.substring(0, 8)}</td>
+                            <td>${sale.client}</td>
+                            <td>${sale.items.length}</td>
+                            <td>${Utils.formatCurrency(sale.total)}</td>
+                            <td>${Utils.formatCurrency(sale.cost)}</td>
+                            <td style="color: ${profit >= 0 ? 'var(--color-secondary)' : 'var(--color-danger)'}">${Utils.formatCurrency(profit)}</td>
+                            <td>${Utils.formatDate(sale.date)}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline" onclick="App.viewSale('${sale.id}')">👁️</button>
+                                <button class="btn btn-sm btn-danger" onclick="App.deleteSale('${sale.id}')">🗑️</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('') || '<tr><td colspan="8" style="text-align:center;color:var(--color-text-light);">Nenhuma venda realizada</td></tr>';
+            },
+            
+            searchSales(query) {
+                const filtered = Store.sales.filter(s => 
+                    s.client.toLowerCase().includes(query.toLowerCase()) ||
+                    s.id.toLowerCase().includes(query.toLowerCase())
+                );
+                this.renderSales(filtered);
+            },
+            
+            filterSales() {
+                const start = document.getElementById('filterDateStart').value;
+                const end = document.getElementById('filterDateEnd').value;
+                
+                let filtered = Store.sales;
+                if (start) filtered = filtered.filter(s => s.date >= start);
+                if (end) filtered = filtered.filter(s => s.date <= end);
+                
+                this.renderSales(filtered);
+            },
+            
+            openSaleModal() {
+                document.getElementById('saleForm').reset();
+                this.saleItems = [];
+                this.renderSaleItems();
+                
+                // Populate products select
+                const select = document.getElementById('saleProduct');
+                select.innerHTML = '<option value="">Selecione um produto...</option>' +
+                    Store.products.filter(p => p.stock > 0).map(p => 
+                        `<option value="${p.id}" data-price="${p.price}" data-name="${p.name}">${p.name} - ${Utils.formatCurrency(p.price)} (Est: ${p.stock})</option>`
+                    ).join('');
+                
+                Modal.open('saleModal');
+            },
+            
+            addProductToSale() {
+                const select = document.getElementById('saleProduct');
+                const productId = select.value;
+                if (!productId) return;
+                
+                const option = select.options[select.selectedIndex];
+                const product = Store.products.find(p => p.id === productId);
+                
+                const existingItem = this.saleItems.find(i => i.productId === productId);
+                if (existingItem) {
+                    if (existingItem.quantity < product.stock) {
+                        existingItem.quantity++;
+                        existingItem.total = existingItem.quantity * existingItem.price;
+                    } else {
+                        Toast.show('Estoque insuficiente!', 'warning');
+                        return;
+                    }
+                } else {
+                    this.saleItems.push({
+                        productId,
+                        name: product.name,
+                        price: product.price,
+                        quantity: 1,
+                        total: product.price
+                    });
+                }
+                
+                this.renderSaleItems();
+                select.value = '';
+            },
+            
+            renderSaleItems() {
+                const tbody = document.getElementById('saleItems');
+                tbody.innerHTML = this.saleItems.map((item, index) => `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="App.updateSaleItemQuantity(${index}, -1)">-</button>
+                            ${item.quantity}
+                            <button type="button" class="btn btn-sm btn-outline" onclick="App.updateSaleItemQuantity(${index}, 1)">+</button>
+                        </td>
+                        <td>${Utils.formatCurrency(item.price)}</td>
+                        <td>${Utils.formatCurrency(item.total)}</td>
+                        <td><button type="button" class="btn btn-sm btn-danger" onclick="App.removeSaleItem(${index})">✕</button></td>
+                    </tr>
+                `).join('');
+                
+                const total = this.saleItems.reduce((sum, i) => sum + i.total, 0);
+                document.getElementById('saleTotal').textContent = total.toFixed(2).replace('.', ',');
+            },
+            
+            updateSaleItemQuantity(index, delta) {
+                const item = this.saleItems[index];
+                const product = Store.products.find(p => p.id === item.productId);
+                
+                const newQty = item.quantity + delta;
+                if (newQty < 1 || newQty > product.stock) return;
+                
+                item.quantity = newQty;
+                item.total = newQty * item.price;
+                this.renderSaleItems();
+            },
+            
+            removeSaleItem(index) {
+                this.saleItems.splice(index, 1);
+                this.renderSaleItems();
+            },
+            
+            saveSale(e) {
+                e.preventDefault();
+                
+                if (this.saleItems.length === 0) {
+                    Toast.show('Adicione pelo menos um produto.', 'warning');
+                    return;
+                }
+                
+                const total = this.saleItems.reduce((sum, i) => sum + i.total, 0);
+                const cost = this.saleItems.reduce((sum, i) => {
+                    const product = Store.products.find(p => p.id === i.productId);
+                    return sum + (product.cost * i.quantity);
+                }, 0);
+                
+                const sale = {
+                    id: Utils.generateId(),
+                    client: document.getElementById('saleClient').value,
+                    items: this.saleItems.map(i => ({
+                        productId: i.productId,
+                        name: i.name,
+                        price: i.price,
+                        quantity: i.quantity,
+                        total: i.total
+                    })),
+                    total,
+                    cost,
+                    date: new Date().toISOString().split('T')[0]
+                };
+                
+                // Update stock
+                this.saleItems.forEach(item => {
+                    const product = Store.products.find(p => p.id === item.productId);
+                    product.stock -= item.quantity;
+                });
+                
+                Store.sales.unshift(sale);
+                Store.addLog('create', 'vendas', `Venda realizada: ${sale.client} - Total: ${Utils.formatCurrency(sale.total)}`, Store.currentUser.id, Store.currentUser.fullName);
+                Store.saveToStorage();
+                
+                Toast.show('Venda realizada com sucesso!', 'success');
+                Modal.close('saleModal');
+                this.loadSales();
+                this.updateDashboardStats();
+            },
+            
+            viewSale(id) {
+                const sale = Store.sales.find(s => s.id === id);
+                if (!sale) return;
+                
+                const profit = sale.total - sale.cost;
+                const content = document.getElementById('viewSaleContent');
+                content.innerHTML = `
+                    <div style="margin-bottom: 16px;">
+                        <strong>ID:</strong> #${sale.id}<br>
+                        <strong>Cliente:</strong> ${sale.client}<br>
+                        <strong>Data:</strong> ${Utils.formatDate(sale.date)}
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Qty</th>
+                                    <th>Unitário</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${sale.items.map(item => `
+                                    <tr>
+                                        <td>${item.name}</td>
+                                        <td>${item.quantity}</td>
+                                        <td>${Utils.formatCurrency(item.price)}</td>
+                                        <td>${Utils.formatCurrency(item.total)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--color-border);">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Custo Total:</span>
+                            <span>${Utils.formatCurrency(sale.cost)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>Total da Venda:</span>
+                            <span style="font-weight: 600; font-size: 18px;">${Utils.formatCurrency(sale.total)}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; color: ${profit >= 0 ? 'var(--color-secondary)' : 'var(--color-danger)'};">
+                            <span>Lucro:</span>
+                            <span style="font-weight: 600;">${Utils.formatCurrency(profit)}</span>
+                        </div>
+                    </div>
+                `;
+                Modal.open('viewSaleModal');
+            },
+            
+            deleteSale(id) {
+                if (confirm('Tem certeza que deseja excluir esta venda?')) {
+                    const sale = Store.sales.find(s => s.id === id);
+                    // Restore stock
+                    sale.items.forEach(item => {
+                        const product = Store.products.find(p => p.id === item.productId);
+                        if (product) product.stock += item.quantity;
+                    });
+                    
+                    Store.sales = Store.sales.filter(s => s.id !== id);
+                    Store.addLog('delete', 'vendas', `Venda excluída: ${sale.client} - Total: ${Utils.formatCurrency(sale.total)}`, Store.currentUser.id, Store.currentUser.fullName);
+                    Store.saveToStorage();
+                    Toast.show('Venda excluída com sucesso!', 'success');
+                    this.loadSales();
+                    this.updateDashboardStats();
+                }
+            },
+            
+            // ========== Expenses ==========
+            loadExpenses() {
+                this.renderExpenses(Store.expenses);
+            },
+            
+            renderExpenses(expenses) {
+                const tbody = document.getElementById('expensesTable');
+                tbody.innerHTML = expenses.map(exp => `
+                    <tr>
+                        <td>#${exp.id.substring(0, 8)}</td>
+                        <td>${exp.description}</td>
+                        <td>${exp.category}</td>
+                        <td>${Utils.formatCurrency(exp.value)}</td>
+                        <td>${Utils.formatDate(exp.date)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="App.deleteExpense('${exp.id}')">🗑️</button>
+                        </td>
+                    </tr>
+                `).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--color-text-light);">Nenhuma despesa registrada</td></tr>';
+            },
+            
+            searchExpenses(query) {
+                const filtered = Store.expenses.filter(e => 
+                    e.description.toLowerCase().includes(query.toLowerCase()) ||
+                    e.category.toLowerCase().includes(query.toLowerCase())
+                );
+                this.renderExpenses(filtered);
+            },
+            
+            openExpenseModal() {
+                document.getElementById('expenseForm').reset();
+                document.getElementById('expenseDate').value = new Date().toISOString().split('T')[0];
+                Modal.open('expenseModal');
+            },
+            
+            saveExpense(e) {
+                e.preventDefault();
+                
+                const expense = {
+                    id: Utils.generateId(),
+                    description: document.getElementById('expenseDescription').value,
+                    category: document.getElementById('expenseCategory').value,
+                    value: parseFloat(document.getElementById('expenseValue').value),
+                    date: document.getElementById('expenseDate').value,
+                    notes: document.getElementById('expenseNotes').value
+                };
+                
+                Store.expenses.unshift(expense);
+                Store.addLog('create', 'despesas', `Despesa registrada: ${expense.description} - ${Utils.formatCurrency(expense.value)}`, Store.currentUser.id, Store.currentUser.fullName);
+                Store.saveToStorage();
+                
+                Toast.show('Despesa registrada com sucesso!', 'success');
+                Modal.close('expenseModal');
+                this.loadExpenses();
+                this.updateDashboardStats();
+            },
+            
+            deleteExpense(id) {
+                const expense = Store.expenses.find(e => e.id === id);
+                if (confirm(`Tem certeza que deseja excluir "${expense.description}"?`)) {
+                    Store.expenses = Store.expenses.filter(e => e.id !== id);
+                    Store.addLog('delete', 'despesas', `Despesa excluída: ${expense.description} - ${Utils.formatCurrency(expense.value)}`, Store.currentUser.id, Store.currentUser.fullName);
+                    Store.saveToStorage();
+                    Toast.show('Despesa excluída com sucesso!', 'success');
+                    this.loadExpenses();
+                    this.updateDashboardStats();
+                }
+            },
+            
+            // ========== Users ==========
+            loadUsers() {
+                this.renderUsers(Store.users);
+            },
+            
+            renderUsers(users) {
+                const tbody = document.getElementById('usersTable');
+                tbody.innerHTML = users.map(u => {
+                    const profileNames = { admin: 'Administrador', manager: 'Gerente', operator: 'Operador' };
+                    const statusBadge = u.active ? 
+                        '<span class="badge badge-success">Ativo</span>' : 
+                        '<span class="badge badge-danger">Inativo</span>';
+                    return `
+                        <tr>
+                            <td>@${u.username}</td>
+                            <td>${u.fullName}</td>
+                            <td>${u.email}</td>
+                            <td>${profileNames[u.profile]}</td>
+                            <td>${u.lastLogin ? Utils.formatDateTime(u.lastLogin) : 'Nunca'}</td>
+                            <td>${statusBadge}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline" onclick="App.editUser('${u.id}')">✏️</button>
+                                ${u.id !== Store.currentUser.id ? `<button class="btn btn-sm btn-danger" onclick="App.deleteUser('${u.id}')">🗑️</button>` : ''}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            },
+            
+            openUserModal(user = null) {
+                document.getElementById('userModalTitle').textContent = user ? 'Editar Usuário' : 'Novo Usuário';
+                document.getElementById('userForm').reset();
+                document.getElementById('passwordGroup').style.display = user ? 'block' : 'block';
+                document.getElementById('userPassword').required = !user;
+                
+                if (user) {
+                    document.getElementById('userId').value = user.id;
+                    document.getElementById('userUsername').value = user.username;
+                    document.getElementById('userFullName').value = user.fullName;
+                    document.getElementById('userEmail').value = user.email;
+                    document.getElementById('userProfile').value = user.profile;
+                    document.getElementById('userPassword').value = '';
+                } else {
+                    document.getElementById('userId').value = '';
+                }
+                
+                this.updatePermissionsDisplay();
+                Modal.open('userModal');
+            },
+            
+            updatePermissionsDisplay() {
+                const profile = document.getElementById('userProfile').value;
+                const permUsers = document.getElementById('permUsers');
+                const permLogs = document.getElementById('permLogs');
+                
+                permUsers.style.display = profile === 'admin' ? 'inline-block' : 'none';
+                permLogs.style.display = profile !== 'operator' ? 'inline-block' : 'none';
+            },
+            
+            editUser(id) {
+                const user = Store.users.find(u => u.id === id);
+                if (user) this.openUserModal(user);
+            },
+            
+            saveUser(e) {
+                e.preventDefault();
+                
+                const id = document.getElementById('userId').value;
+                const userData = {
+                    username: document.getElementById('userUsername').value,
+                    fullName: document.getElementById('userFullName').value,
+                    email: document.getElementById('userEmail').value,
+                    profile: document.getElementById('userProfile').value,
+                    active: true
+                };
+                
+                const password = document.getElementById('userPassword').value;
+                if (password) userData.password = password;
+                
+                if (id) {
+                    const index = Store.users.findIndex(u => u.id === id);
+                    const oldUser = Store.users[index];
+                    Store.users[index] = { ...oldUser, ...userData };
+                    Store.addLog('update', 'usuarios', `Usuário atualizado: ${userData.username}`, Store.currentUser.id, Store.currentUser.fullName);
+                    Toast.show('Usuário atualizado com sucesso!', 'success');
+                } else {
+                    userData.id = Utils.generateId();
+                    userData.password = userData.password || userData.username;
+                    userData.lastLogin = null;
+                    Store.users.push(userData);
+                    Store.addLog('create', 'usuarios', `Usuário criado: ${userData.username}`, Store.currentUser.id, Store.currentUser.fullName);
+                    Toast.show('Usuário criado com sucesso!', 'success');
+                }
+                
+                Store.saveToStorage();
+                Modal.close('userModal');
+                this.loadUsers();
+            },
+            
+            deleteUser(id) {
+                const user = Store.users.find(u => u.id === id);
+                if (confirm(`Tem certeza que deseja excluir o usuário "${user.username}"?`)) {
+                    Store.users = Store.users.filter(u => u.id !== id);
+                    Store.addLog('delete', 'usuarios', `Usuário excluído: ${user.username}`, Store.currentUser.id, Store.currentUser.fullName);
+                    Store.saveToStorage();
+                    Toast.show('Usuário excluído com sucesso!', 'success');
+                    this.loadUsers();
+                }
+            },
+            
+            // ========== Logs ==========
+            loadLogs() {
+                this.renderLogs(Store.logs);
+            },
+            
+            renderLogs(logs) {
+                const container = document.getElementById('logsContainer');
+                
+                if (logs.length === 0) {
+                    container.innerHTML = '<p style="text-align:center;color:var(--color-text-light);padding:40px;">Nenhum registro encontrado</p>';
+                    return;
+                }
+                
+                const actionNames = {
+                    create: 'Criação',
+                    update: 'Edição',
+                    delete: 'Exclusão',
+                    login: 'Login'
+                };
+                
+                container.innerHTML = logs.map(log => {
+                    const iconClass = log.action;
+                    return `
+                        <div class="log-entry">
+                            <div class="log-icon ${iconClass}">
+                                ${log.action === 'create' ? '+' : log.action === 'update' ? '✏' : log.action === 'delete' ? '✕' : '🔑'}
+                            </div>
+                            <div class="log-content">
+                                <h4>${actionNames[log.action]} - ${log.module.charAt(0).toUpperCase() + log.module.slice(1)}</h4>
+                                <p>${log.details}</p>
+                            </div>
+                            <div class="log-time">${Utils.formatDateTime(log.timestamp)}<br>por ${log.userName}</div>
+                        </div>
+                    `;
+                }).join('');
+            },
+            
+            filterLogs() {
+                const type = document.getElementById('filterLogType').value;
+                const module = document.getElementById('filterLogModule').value;
+                const date = document.getElementById('filterLogDate').value;
+                
+                let filtered = Store.logs;
+                
+                if (type !== 'all') {
+                    filtered = filtered.filter(l => l.action === type);
+                }
+                if (module !== 'all') {
+                    filtered = filtered.filter(l => l.module === module);
+                }
+                if (date) {
+                    filtered = filtered.filter(l => l.timestamp.startsWith(date));
+                }
+                
+                this.renderLogs(filtered);
+            },
+            
+            clearLogs() {
+                if (confirm('Tem certeza que deseja limpar todos os registros?')) {
+                    Store.logs = [];
+                    Store.saveToStorage();
+                    Toast.show('Registros limpos com sucesso!', 'success');
+                    this.loadLogs();
+                }
+            },
+            
+            exportLogs() {
+                const dataStr = JSON.stringify(Store.logs, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `logs_sistema_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                Toast.show('Logs exportados com sucesso!', 'success');
+            },
+            
+            // ========== Reports ==========
+            loadReports() {
+                this.generateReport();
+            },
+            
+            generateReport() {
+                const startDate = document.getElementById('reportDateStart').value;
+                const endDate = document.getElementById('reportDateEnd').value;
+                const reportType = document.getElementById('reportType').value;
+                
+                let sales = Store.sales;
+                let expenses = Store.expenses;
+                
+                if (startDate) {
+                    sales = sales.filter(s => s.date >= startDate);
+                    expenses = expenses.filter(e => e.date >= startDate);
+                }
+                if (endDate) {
+                    sales = sales.filter(s => s.date <= endDate);
+                    expenses = expenses.filter(e => e.date <= endDate);
+                }
+                
+                const totalSales = sales.reduce((sum, s) => sum + s.total, 0);
+                const totalCost = sales.reduce((sum, s) => sum + s.cost, 0);
+                const grossProfit = totalSales - totalCost;
+                const totalExpenses = expenses.reduce((sum, e) => sum + e.value, 0);
+                const netProfit = grossProfit - totalExpenses;
+                
+                let content = '';
+                
+                switch(reportType) {
+                    case 'financeiro':
+                        content = this.generateFinancialReport(sales, expenses, totalSales, totalExpenses, grossProfit, netProfit);
+                        break;
+                    case 'vendas':
+                        content = this.generateSalesReport(sales);
+                        break;
+                    case 'estoque':
+                        content = this.generateStockReport();
+                        break;
+                    case 'lucro':
+                        content = this.generateProfitReport(sales, totalCost);
+                        break;
+                }
+                
+                document.getElementById('reportContent').innerHTML = content;
+            },
+            
+            generateFinancialReport(sales, expenses, totalSales, totalExpenses, grossProfit, netProfit) {
+                const expensesByCategory = {};
+                expenses.forEach(e => {
+                    expensesByCategory[e.category] = (expensesByCategory[e.category] || 0) + e.value;
+                });
+                
+                return `
+                    <div class="report-summary">
+                        <div class="summary-item">
+                            <h4>${Utils.formatCurrency(totalSales)}</h4>
+                            <p>Receita Bruta</p>
+                        </div>
+                        <div class="summary-item">
+                            <h4>${Utils.formatCurrency(totalExpenses)}</h4>
+                            <p>Total de Despesas</p>
+                        </div>
+                        <div class="summary-item">
+                            <h4 style="color: ${grossProfit >= 0 ? 'var(--color-secondary)' : 'var(--color-danger)'}">${Utils.formatCurrency(grossProfit)}</h4>
+                            <p>Lucro Bruto</p>
+                        </div>
+                        <div class="summary-item">
+                            <h4 style="color: ${netProfit >= 0 ? 'var(--color-secondary)' : 'var(--color-danger)'}">${Utils.formatCurrency(netProfit)}</h4>
+                            <p>Lucro Líquido</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Despesas por Categoria</h3>
+                        </div>
+                        <div class="card-body">
+                            ${Object.entries(expensesByCategory).map(([cat, val]) => `
+                                <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--color-border);">
+                                    <span>${cat}</span>
+                                    <span style="font-weight:500;">${Utils.formatCurrency(val)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            },
+            
+            generateSalesReport(sales) {
+                const salesByMonth = {};
+                const salesByProduct = {};
+                
+                sales.forEach(sale => {
+                    const month = sale.date.substring(0, 7);
+                    salesByMonth[month] = (salesByMonth[month] || 0) + sale.total;
+                    
+                    sale.items.forEach(item => {
+                        salesByProduct[item.name] = (salesByProduct[item.name] || 0) + item.quantity;
+                    });
+                });
+                
+                const topProducts = Object.entries(salesByProduct)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 10);
+                
+                return `
+                    <div class="report-summary">
+                        <div class="summary-item">
+                            <h4>${sales.length}</h4>
+                            <p>Total de Vendas</p>
+                        </div>
+                        <div class="summary-item">
+                            <h4>${Utils.formatCurrency(sales.reduce((sum, s) => sum + s.total, 0))}</h4>
+                            <p>Faturamento Total</p>
+                        </div>
+                        <div class="summary-item">
+                            <h4>${Utils.formatCurrency(sales.length > 0 ? sales.reduce((sum, s) => sum + s.total, 0) / sales.length : 0)}</h4>
+                            <p>Ticket Médio</p>
+                        </div>
+                    </div>
+                    <div class="card" style="margin-bottom: 20px;">
+                        <div class="card-header">
+                            <h3>Top 10 Produtos Mais Vendidos</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Produto</th>
+                                            <th>Quantidade</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${topProducts.map(([name, qty]) => `
+                                            <tr>
+                                                <td>${name}</td>
+                                                <td>${qty}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+            
+            generateStockReport() {
+                const lowStock = Store.products.filter(p => p.stock < 10);
+                const outOfStock = Store.products.filter(p => p.stock === 0);
+                const totalValue = Store.products.reduce((sum, p) => sum + (p.cost * p.stock), 0);
+                const totalRetailValue = Store.products.reduce((sum, p) => sum + (p.price * p.stock), 0);
+                
+                return `
+                    <div class="report-summary">
+                        <div class="summary-item">
+                            <h4>${Store.products.length}</h4>
+                            <p>Total de Produtos</p>
+                        </div>
+                        <div class="summary-item">
+                            <h4>${totalValue.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</h4>
+                            <p>Valor do Estoque (Custo)</p>
+                        </div>
+                        <div class="summary-item">
+                            <h4 style="color: ${outOfStock.length > 0 ? 'var(--color-danger)' : 'var(--color-secondary)'}">${outOfStock.length}</h4>
+                            <p>Sem Estoque</p>
+                        </div>
+                        <div class="summary-item">
+                            <h4 style="color: ${lowStock.length > 0 ? 'var(--color-warning)' : 'var(--color-secondary)'}">${lowStock.length}</h4>
+                            <p>Estoque Baixo</p>
+                        </div>
+                    </div>
+                    ${outOfStock.length > 0 ? `
+                        <div class="card" style="margin-bottom: 20px; border-color: var(--color-danger);">
+                            <div class="card-header" style="background: rgba(231,76,60,0.1);">
+                                <h3 style="color: var(--color-danger);">⚠️ Produtos Sem Estoque</h3>
+                            </div>
+                            <div class="card-body">
+                                ${outOfStock.map(p => `<span class="badge badge-danger" style="margin:4px;">${p.name}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${lowStock.length > 0 ? `
+                        <div class="card" style="margin-bottom: 20px; border-color: var(--color-warning);">
+                            <div class="card-header" style="background: rgba(243,156,18,0.1);">
+                                <h3 style="color: var(--color-warning);">⚠️ Estoque Baixo</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Produto</th>
+                                                <th>Estoque Atual</th>
+                                                <th>Mínimo Sugerido</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${lowStock.map(p => `
+                                                <tr>
+                                                    <td>${p.name}</td>
+                                                    <td><span class="badge badge-warning">${p.stock}</span></td>
+                                                    <td>10</td>
+                                                </tr>
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+                `;
+            },
+            
+            generateProfitReport(sales, totalCost) {
+                const profitByMonth = {};
+                
+                sales.forEach(sale => {
+                    const month = sale.date.substring(0, 7);
+                    const profit = sale.total - sale.cost;
+                    if (!profitByMonth[month]) profitByMonth[month] = { revenue: 0, cost: 0, profit: 0 };
+                    profitByMonth[month].revenue += sale.total;
+                    profitByMonth[month].cost += sale.cost;
+                    profitByMonth[month].profit += profit;
+                });
+                
+                const months = Object.keys(profitByMonth).sort();
+                
+                return `
+                    <div class="report-summary">
+                        <div class="summary-item">
+                            <h4>${Utils.formatCurrency(sales.reduce((sum, s) => sum + s.total, 0))}</h4>
+                            <p>Receita Total</p>
+                        </div>
+                        <div class="summary-item">
+                            <h4>${Utils.formatCurrency(totalCost)}</h4>
+                            <p>Custo Total</p>
+                        </div>
+                        <div class="summary-item">
+                            <h4 style="color: var(--color-secondary)">${Utils.formatCurrency(sales.reduce((sum, s) => sum + s.total - s.cost, 0))}</h4>
+                            <p>Lucro Total</p>
+                        </div>
+                        <div class="summary-item">
+                            <h4>${sales.length > 0 ? ((sales.reduce((sum, s) => sum + s.total - s.cost, 0) / sales.reduce((sum, s) => sum + s.total, 0)) * 100).toFixed(1) : 0}%</h4>
+                            <p>Margem Média</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Lucro por Mês</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Mês</th>
+                                            <th>Receita</th>
+                                            <th>Custo</th>
+                                            <th>Lucro</th>
+                                            <th>Margem</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${months.map(month => {
+                                            const data = profitByMonth[month];
+                                            const margin = ((data.profit / data.revenue) * 100).toFixed(1);
+                                            return `
+                                                <tr>
+                                                    <td>${month}</td>
+                                                    <td>${Utils.formatCurrency(data.revenue)}</td>
+                                                    <td>${Utils.formatCurrency(data.cost)}</td>
+                                                    <td style="color: ${data.profit >= 0 ? 'var(--color-secondary)' : 'var(--color-danger)'}">${Utils.formatCurrency(data.profit)}</td>
+                                                    <td>${margin}%</td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+            
+            // ========== Export ==========
+            exportPDF() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                doc.setFontSize(20);
+                doc.setTextColor(30, 58, 95);
+                doc.text('Relatório do Sistema de Gestão', 20, 20);
+                
+                doc.setFontSize(12);
+                doc.setTextColor(100);
+                doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 20, 30);
+                
+                let y = 50;
+                
+                // Resumo
+                doc.setFontSize(16);
+                doc.setTextColor(30, 58, 95);
+                doc.text('Resumo Geral', 20, y);
+                y += 10;
+                
+                const totalSales = Store.sales.reduce((sum, s) => sum + s.total, 0);
+                const totalCost = Store.sales.reduce((sum, s) => sum + s.cost, 0);
+                const profit = totalSales - totalCost;
+                const totalExpenses = Store.expenses.reduce((sum, e) => sum + e.value, 0);
+                
+                doc.setFontSize(11);
+                doc.setTextColor(0);
+                doc.text(`Total de Vendas: ${Utils.formatCurrency(totalSales)}`, 20, y);
+                y += 7;
+                doc.text(`Total de Despesas: ${Utils.formatCurrency(totalExpenses)}`, 20, y);
+                y += 7;
+                doc.text(`Lucro Líquido: ${Utils.formatCurrency(profit - totalExpenses)}`, 20, y);
+                y += 7;
+                doc.text(`Produtos em Estoque: ${Store.products.length}`, 20, y);
+                y += 15;
+                
+                // Produtos
+                if (Store.products.length > 0) {
+                    doc.setFontSize(16);
+                    doc.setTextColor(30, 58, 95);
+                    doc.text('Produtos', 20, y);
+                    y += 10;
+                    
+                    const productData = Store.products.slice(0, 20).map(p => [
+                        p.code,
+                        p.name.substring(0, 20),
+                        p.category,
+                        p.stock.toString(),
+                        Utils.formatCurrency(p.price)
+                    ]);
+                    
+                    doc.autoTable({
+                        startY: y,
+                        head: [['Código', 'Nome', 'Categoria', 'Estoque', 'Preço']],
+                        body: productData,
+                        theme: 'striped',
+                        headStyles: { fillColor: [30, 58, 95] }
+                    });
+                    
+                    y = doc.lastAutoTable.finalY + 15;
+                }
+                
+                // Vendas recentes
+                if (Store.sales.length > 0) {
+                    if (y > 250) {
+                        doc.addPage();
+                        y = 20;
+                    }
+                    
+                    doc.setFontSize(16);
+                    doc.setTextColor(30, 58, 95);
+                    doc.text('Vendas Recentes', 20, y);
+                    y += 10;
+                    
+                    const saleData = Store.sales.slice(0, 10).map(s => [
+                        s.id.substring(0, 8),
+                        s.client,
+                        s.items.length.toString(),
+                        Utils.formatCurrency(s.total),
+                        Utils.formatDate(s.date)
+                    ]);
+                    
+                    doc.autoTable({
+                        startY: y,
+                        head: [['ID', 'Cliente', 'Itens', 'Total', 'Data']],
+                        body: saleData,
+                        theme: 'striped',
+                        headStyles: { fillColor: [30, 58, 95] }
+                    });
+                }
+                
+                doc.save(`relatorio_sistema_${new Date().toISOString().split('T')[0]}.pdf`);
+                Toast.show('Relatório PDF exportado com sucesso!', 'success');
+            },
+            
+            exportCSV() {
+                let csv = 'Tipo,ID,Descrição,Categoria,Quantidade/Valor,Custo,Preço,Data,Usuário\n';
+                
+                Store.products.forEach(p => {
+                    csv += `Produto,${p.id},${p.name},${p.category},${p.stock},${p.cost},${p.price},,\n`;
+                });
+                
+                Store.sales.forEach(s => {
+                    const desc = s.client + ' (' + s.items.length + ' itens)';
+                    csv += `Venda,${s.id},${desc},,${s.total},${s.cost},,${s.date},${s.userId || ''}\n`;
+                });
+                
+                Store.expenses.forEach(e => {
+                    csv += `Despesa,${e.id},${e.description},${e.category},${e.value},,,${e.date},\n`;
+                });
+                
+                const blob = new Blob([csv], { type: 'text/csv' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `exportacao_sistema_${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+                Toast.show('Exportação CSV realizada com sucesso!', 'success');
+            },
+            
+            exportData() {
+                const data = {
+                    products: Store.products,
+                    sales: Store.sales,
+                    expenses: Store.expenses,
+                    users: Store.users,
+                    exportDate: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `backup_sistema_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                Toast.show('Backup realizado com sucesso!', 'success');
+                Store.addLog('create', 'sistema', 'Backup do sistema realizado', Store.currentUser.id, Store.currentUser.fullName);
+                Store.saveToStorage();
+            },
+            
+            // ========== Modal ==========
+            closeModal(modalId) {
+                Modal.close(modalId);
+            }
+        };
+        
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => App.init());
+    </script>
+</body>
+</html>

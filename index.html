@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de Gestão Professional - Controle de estoque, vendas, despesas e relatórios">
+    <meta name="theme-color" content="#1E3A5F">
+    <title>Sistema de Gestão Professional</title>
+    
+    <!-- Fontes -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS Principal -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Container de Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Tela de Login -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-box">
+            <div class="logo">📊 SG Pro</div>
+            <h1>Sistema de Gestão Professional</h1>
+            <p>Faça login para acessar o sistema</p>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsername">Usuário</label>
+                    <input type="text" id="loginUsername" placeholder="Digite seu usuário" required autocomplete="username">
+                </div>
+                
+                <div class="form-group">
+                    <label for="loginPassword">Senha</label>
+                    <input type="password" id="loginPassword" placeholder="Digite sua senha" required autocomplete="current-password">
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+            </form>
+            
+            <div class="demo-info">
+                <strong>Contas de demonstração:</strong><br>
+                admin / admin | gerente / gerente | operador / operador
+            </div>
+        </div>
+    </div>
+
+    <!-- Container Principal da Aplicação -->
+    <div class="app-container" id="appContainer">
+        <!-- Barra Lateral -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>📊 SG Pro</h2>
+                <span>Sistema de Gestão</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-item active" data-page="dashboard">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+                        <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+                        <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+                        <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+                    </svg>
+                    Dashboard
+                </div>
+                
+                <div class="nav-item" data-page="produtos">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                        <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                    Produtos
+                </div>
+                
+                <div class="nav-item" data-page="vendas">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    Vendas
+                </div>
+                
+                <div class="nav-item" data-page="despesas">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23"></line>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                    </svg>
+                    Despesas
+                </div>
+                
+                <div class="nav-item" data-page="relatorios">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    Relatórios
+                </div>
+                
+                <div class="nav-item" data-page="usuarios" id="navUsuarios">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    Usuários
+                </div>
+                
+                <div class="nav-item" data-page="logs" id="navLogs">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <path d="M14 2v6h6"></path>
+                        <path d="M12 18v-6"></path>
+                        <path d="M9 15h6"></path>
+                    </svg>
+                    Registros
+                </div>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">A</div>
+                    <div class="user-details">
+                        <h4 id="userName">Admin</h4>
+                        <span id="userRole">Administrador</span>
+                    </div>
+                </div>
+                <button class="btn btn-outline btn-block" onclick="App.logout()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Sair
+                </button>
+            </div>
+        </aside>
+
+        <!-- Conteúdo Principal -->
+        <main class="main-content">
+            <!-- Página: Dashboard -->
+            <section id="page-dashboard" class="page">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <div class="actions">
+                        <button class="btn btn-outline" onclick="App.exportData()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Backup
+                        </button>
+                        <button class="btn btn-primary" onclick="App.openSaleModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Nova Venda
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="stats-grid" id="dashboardStats"></div>
+                
+                <div class="charts-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Receitas vs Despesas</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="chartFinanceiro"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Produtos Mais Vendidos</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container">
+                                <canvas id="chartProdutos"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Vendas Recentes</h3>
+                        <button class="btn btn-sm btn-outline" onclick="App.showPage('vendas')">Ver todas</button>
+                    </div>
+                    <div class="card-body no-padding">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Produtos</th>
+                                        <th>Total</th>
+                                        <th>Data</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentSalesTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Página: Produtos -->
+            <section id="page-produtos" class="page hidden">
+                <div class="page-header">
+                    <h1>Produtos</h1>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="App.openProductModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Novo Produto
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="search-bar">
+                    <div class="search-input">
+                        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="M21 21l-4.35-4.35"></path>
+                        </svg>
+                        <input type="text" id="searchProducts" placeholder="Buscar produtos..." oninput="App.searchProducts(this.value)">
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-body no-padding">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nome</th>
+                                        <th>Categoria</th>
+                                        <th>Preço Custo</th>
+                                        <th>Preço Venda</th>
+                                        <th>Estoque</th>
+                                        <th>Margem</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productsTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Página: Vendas -->
+            <section id="page-vendas" class="page hidden">
+                <div class="page-header">
+                    <h1>Vendas</h1>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="App.openSaleModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Nova Venda
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="search-bar">
+                    <div class="search-input">
+                        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="M21 21l-4.35-4.35"></path>
+                        </svg>
+                        <input type="text" id="searchSales" placeholder="Buscar vendas..." oninput="App.searchSales(this.value)">
+                    </div>
+                    <div class="filter-group">
+                        <input type="date" id="filterDateStart" onchange="App.filterSales()">
+                        <input type="date" id="filterDateEnd" onchange="App.filterSales()">
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-body no-padding">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Cliente</th>
+                                        <th>Items</th>
+                                        <th>Total</th>
+                                        <th>Custo</th>
+                                        <th>Lucro</th>
+                                        <th>Data</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="salesTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Página: Despesas -->
+            <section id="page-despesas" class="page hidden">
+                <div class="page-header">
+                    <h1>Despesas</h1>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="App.openExpenseModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Nova Despesa
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="search-bar">
+                    <div class="search-input">
+                        <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="M21 21l-4.35-4.35"></path>
+                        </svg>
+                        <input type="text" id="searchExpenses" placeholder="Buscar despesas..." oninput="App.searchExpenses(this.value)">
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-body no-padding">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Descrição</th>
+                                        <th>Categoria</th>
+                                        <th>Valor</th>
+                                        <th>Data</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expensesTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Página: Relatórios -->
+            <section id="page-relatorios" class="page hidden">
+                <div class="page-header">
+                    <h1>Relatórios</h1>
+                    <div class="actions">
+                        <button class="btn btn-outline" onclick="App.exportPDF()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                            Exportar PDF
+                        </button>
+                        <button class="btn btn-success" onclick="App.exportCSV()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Exportar CSV
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="report-filters">
+                    <div class="form-group">
+                        <label for="reportDateStart">Data Inicial</label>
+                        <input type="date" id="reportDateStart" onchange="App.generateReport()">
+                    </div>
+                    <div class="form-group">
+                        <label for="reportDateEnd">Data Final</label>
+                        <input type="date" id="reportDateEnd" onchange="App.generateReport()">
+                    </div>
+                    <div class="form-group">
+                        <label for="reportType">Tipo de Relatório</label>
+                        <select id="reportType" onchange="App.generateReport()">
+                            <option value="financeiro">Financeiro</option>
+                            <option value="vendas">Vendas</option>
+                            <option value="estoque">Estoque</option>
+                            <option value="lucro">Lucro</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="App.generateReport()">Gerar Relatório</button>
+                </div>
+                
+                <div id="reportContent"></div>
+            </section>
+
+            <!-- Página: Usuários -->
+            <section id="page-usuarios" class="page hidden">
+                <div class="page-header">
+                    <h1>Gerenciamento de Usuários</h1>
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="App.openUserModal()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="8.5" cy="7" r="4"></circle>
+                                <line x1="20" y1="8" x2="20" y2="14"></line>
+                                <line x1="23" y1="11" x2="17" y2="11"></line>
+                            </svg>
+                            Novo Usuário
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-body no-padding">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Usuário</th>
+                                        <th>Nome</th>
+                                        <th>Email</th>
+                                        <th>Perfil</th>
+                                        <th>Último Login</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Página: Logs -->
+            <section id="page-logs" class="page hidden">
+                <div class="page-header">
+                    <h1>Registro de Alterações</h1>
+                    <div class="actions">
+                        <button class="btn btn-outline" onclick="App.clearLogs()">Limpar Logs</button>
+                        <button class="btn btn-primary" onclick="App.exportLogs()">Exportar Logs</button>
+                    </div>
+                </div>
+                
+                <div class="log-filters">
+                    <select id="filterLogType" onchange="App.filterLogs()">
+                        <option value="all">Todos os tipos</option>
+                        <option value="create">Criação</option>
+                        <option value="update">Edição</option>
+                        <option value="delete">Exclusão</option>
+                        <option value="login">Login</option>
+                        <option value="system">Sistema</option>
+                    </select>
+                    <select id="filterLogModule" onchange="App.filterLogs()">
+                        <option value="all">Todos os módulos</option>
+                        <option value="produtos">Produtos</option>
+                        <option value="vendas">Vendas</option>
+                        <option value="despesas">Despesas</option>
+                        <option value="usuarios">Usuários</option>
+                        <option value="sistema">Sistema</option>
+                    </select>
+                    <input type="date" id="filterLogDate" onchange="App.filterLogs()">
+                </div>
+                
+                <div class="card">
+                    <div class="card-body" id="logsContainer"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modais -->
+    <!-- Modal de Produto -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="productModalTitle">Novo Produto</h2>
+                <button class="modal-close" onclick="App.closeModal('productModal')">&times;</button>
+            </div>
+            <form id="productForm" onsubmit="App.saveProduct(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="productId">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="productCode">Código</label>
+                            <input type="text" id="productCode" placeholder="Ex: PROD001" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productCategory">Categoria</label>
+                            <select id="productCategory" required>
+                                <option value="">Selecione...</option>
+                                <option value="Eletrônicos">Eletrônicos</option>
+                                <option value="Roupas">Roupas</option>
+                                <option value="Alimentos">Alimentos</option>
+                                <option value="Bebidas">Bebidas</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productName">Nome do Produto</label>
+                        <input type="text" id="productName" placeholder="Nome do produto" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="productCost">Preço de Custo</label>
+                            <input type="number" id="productCost" step="0.01" min="0" placeholder="0,00" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productPrice">Preço de Venda</label>
+                            <input type="number" id="productPrice" step="0.01" min="0" placeholder="0,00" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productStock">Quantidade em Estoque</label>
+                        <input type="number" id="productStock" min="0" placeholder="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productDescription">Descrição</label>
+                        <textarea id="productDescription" rows="3" placeholder="Descrição opcional do produto"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="App.closeModal('productModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Venda -->
+    <div class="modal-overlay" id="saleModal">
+        <div class="modal modal-lg">
+            <div class="modal-header">
+                <h2>Nova Venda</h2>
+                <button class="modal-close" onclick="App.closeModal('saleModal')">&times;</button>
+            </div>
+            <form id="saleForm" onsubmit="App.saveSale(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="saleClient">Cliente</label>
+                        <input type="text" id="saleClient" placeholder="Nome do cliente" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="saleProduct">Adicionar Produto</label>
+                        <select id="saleProduct" onchange="App.addProductToSale()">
+                            <option value="">Selecione um produto...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="card" style="margin-bottom: 16px;">
+                        <div class="card-body">
+                            <h4 style="margin-bottom: 12px;">Itens da Venda</h4>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Produto</th>
+                                            <th>Qty</th>
+                                            <th>Unitário</th>
+                                            <th>Total</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="saleItems"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: right; font-size: 20px; font-weight: 600;">
+                        Total: KZ <span id="saleTotal">0,00</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="App.closeModal('saleModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-success">Finalizar Venda</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Venda -->
+    <div class="modal-overlay" id="saleSuccessModal">
+        <div class="modal modal-success">
+            <div class="modal-header">
+                <h2>Venda Realizada com Sucesso!</h2>
+                <button class="modal-close" onclick="App.closeSaleSuccessModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="saleSuccessContent">
+                <!-- Conteúdo será preenchido dinamicamente -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" onclick="App.closeSaleSuccessModal()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Visualização de Venda -->
+    <div class="modal-overlay" id="expenseModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Nova Despesa</h2>
+                <button class="modal-close" onclick="App.closeModal('expenseModal')">&times;</button>
+            </div>
+            <form id="expenseForm" onsubmit="App.saveExpense(event)">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="expenseDescription">Descrição</label>
+                        <input type="text" id="expenseDescription" placeholder="Descrição da despesa" required>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expenseCategory">Categoria</label>
+                            <select id="expenseCategory" required>
+                                <option value="">Selecione...</option>
+                                <option value="Aluguel">Aluguel</option>
+                                <option value="Salários">Salários</option>
+                                <option value="Fornecedores">Fornecedores</option>
+                                <option value="Utilidades">Utilidades</option>
+                                <option value="Marketing">Marketing</option>
+                                <option value="Manutenção">Manutenção</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="expenseValue">Valor</label>
+                            <input type="number" id="expenseValue" step="0.01" min="0" placeholder="0,00" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expenseDate">Data</label>
+                        <input type="date" id="expenseDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="expenseNotes">Observações</label>
+                        <textarea id="expenseNotes" rows="3" placeholder="Observações opcionais"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="App.closeModal('expenseModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Usuário -->
+    <div class="modal-overlay" id="userModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="userModalTitle">Novo Usuário</h2>
+                <button class="modal-close" onclick="App.closeModal('userModal')">&times;</button>
+            </div>
+            <form id="userForm" onsubmit="App.saveUser(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="userId">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="userUsername">Username</label>
+                            <input type="text" id="userUsername" placeholder="Nome de usuário" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userProfile">Perfil de Acesso</label>
+                            <select id="userProfile" required onchange="App.updatePermissionsDisplay()">
+                                <option value="admin">Administrador</option>
+                                <option value="manager">Gerente</option>
+                                <option value="operator">Operador</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="userFullName">Nome Completo</label>
+                            <input type="text" id="userFullName" placeholder="Nome completo" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userEmail">Email</label>
+                            <input type="email" id="userEmail" placeholder="email@exemplo.com" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="passwordGroup">
+                        <label for="userPassword">Senha</label>
+                        <input type="password" id="userPassword" placeholder="Senha">
+                        <small style="color: var(--color-text-light);">Obrigatório para novos usuários</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Permissões do Perfil</label>
+                        <div class="user-permissions" id="permissionsDisplay">
+                            <span class="permission-tag allowed">Ver Dashboard</span>
+                            <span class="permission-tag allowed">Gerenciar Produtos</span>
+                            <span class="permission-tag allowed">Gerenciar Vendas</span>
+                            <span class="permission-tag allowed">Gerenciar Despesas</span>
+                            <span class="permission-tag allowed">Ver Relatórios</span>
+                            <span class="permission-tag allowed" id="permUsers">Gerenciar Usuários</span>
+                            <span class="permission-tag allowed" id="permLogs">Ver Logs</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="App.closeModal('userModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Visualização de Venda -->
+    <div class="modal-overlay" id="viewSaleModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Detalhes da Venda</h2>
+                <button class="modal-close" onclick="App.closeModal('viewSaleModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="viewSaleContent"></div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="App.closeModal('viewSaleModal')">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bibliotecas Externas (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Scripts da Aplicação -->
+    <script src="js/utils.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

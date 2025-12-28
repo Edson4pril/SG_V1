@@ -1,0 +1,189 @@
+{
+  "users": [
+    {
+      "id": "user_1",
+      "username": "admin",
+      "password": "admin",
+      "fullName": "Administrador do Sistema",
+      "email": "admin@sistema.com",
+      "profile": "admin",
+      "active": true,
+      "lastLogin": null
+    },
+    {
+      "id": "user_2",
+      "username": "operador",
+      "password": "operador",
+      "fullName": "Operador Padrão",
+      "email": "operador@sistema.com",
+      "profile": "operator",
+      "active": true,
+      "lastLogin": null
+    },
+    {
+      "id": "user_3",
+      "username": "gerente",
+      "password": "gerente",
+      "fullName": "Gerente Regional",
+      "email": "gerente@sistema.com",
+      "profile": "manager",
+      "active": true,
+      "lastLogin": null
+    }
+  ],
+  "products": [
+    {
+      "id": "prod_1",
+      "code": "ELEC001",
+      "name": "Smartphone X200",
+      "category": "Eletrônicos",
+      "cost": 800,
+      "price": 1499,
+      "stock": 25,
+      "description": "Smartphone de última geração com tela AMOLED"
+    },
+    {
+      "id": "prod_2",
+      "code": "ELEC002",
+      "name": "Notebook Pro 15",
+      "category": "Eletrônicos",
+      "cost": 2500,
+      "price": 4299,
+      "stock": 12,
+      "description": "Notebook profissional com processador i7"
+    },
+    {
+      "id": "prod_3",
+      "code": "ROUP001",
+      "name": "Camiseta Básica",
+      "category": "Roupas",
+      "cost": 15,
+      "price": 49.90,
+      "stock": 100,
+      "description": "Camiseta 100% algodão diversas cores"
+    },
+    {
+      "id": "prod_4",
+      "code": "ALIM001",
+      "name": "Café Especial 500g",
+      "category": "Alimentos",
+      "cost": 25,
+      "price": 59.90,
+      "stock": 50,
+      "description": "Café torrado e moído premium"
+    },
+    {
+      "id": "prod_5",
+      "code": "BEB001",
+      "name": "Água Mineral 500ml",
+      "category": "Bebidas",
+      "cost": 1.50,
+      "price": 3.50,
+      "stock": 200,
+      "description": "Água mineral sem gás"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "exp_1",
+      "description": "Aluguel do escritório",
+      "category": "Aluguel",
+      "value": 2500,
+      "date": "2025-12-01",
+      "notes": "Pagamento mensal do aluguel"
+    },
+    {
+      "id": "exp_2",
+      "description": "Conta de luz",
+      "category": "Utilidades",
+      "value": 450,
+      "date": "2025-12-05",
+      "notes": "Consumo de novembro"
+    },
+    {
+      "id": "exp_3",
+      "description": "Salário funcionários",
+      "category": "Salários",
+      "value": 8500,
+      "date": "2025-12-05",
+      "notes": "Folha de pagamento dezembro"
+    },
+    {
+      "id": "exp_4",
+      "description": "Campanha publicitária",
+      "category": "Marketing",
+      "value": 1200,
+      "date": "2025-12-10",
+      "notes": "Anúncios Google Ads"
+    },
+    {
+      "id": "exp_5",
+      "description": "Manutenção equipamentos",
+      "category": "Manutenção",
+      "value": 350,
+      "date": "2025-12-15",
+      "notes": "Reparo no ar-condicionado"
+    }
+  ],
+  "sales": [
+    {
+      "id": "sale_1",
+      "client": "João Silva",
+      "items": [
+        { "productId": "prod_1", "name": "Smartphone X200", "price": 1499, "quantity": 2, "total": 2998 },
+        { "productId": "prod_5", "name": "Água Mineral 500ml", "price": 3.50, "quantity": 2, "total": 7 }
+      ],
+      "total": 3005,
+      "cost": 1603,
+      "date": "2025-12-20",
+      "userId": "user_2"
+    },
+    {
+      "id": "sale_2",
+      "client": "Maria Santos",
+      "items": [
+        { "productId": "prod_3", "name": "Camiseta Básica", "price": 49.90, "quantity": 5, "total": 249.50 }
+      ],
+      "total": 249.50,
+      "cost": 75,
+      "date": "2025-12-21",
+      "userId": "user_2"
+    },
+    {
+      "id": "sale_3",
+      "client": "Carlos Oliveira",
+      "items": [
+        { "productId": "prod_2", "name": "Notebook Pro 15", "price": 4299, "quantity": 1, "total": 4299 }
+      ],
+      "total": 4299,
+      "cost": 2500,
+      "date": "2025-12-22",
+      "userId": "user_1"
+    },
+    {
+      "id": "sale_4",
+      "client": "Ana Pereira",
+      "items": [
+        { "productId": "prod_4", "name": "Café Especial 500g", "price": 59.90, "quantity": 3, "total": 179.70 },
+        { "productId": "prod_5", "name": "Água Mineral 500ml", "price": 3.50, "quantity": 6, "total": 21 }
+      ],
+      "total": 200.70,
+      "cost": 85.50,
+      "date": "2025-12-23",
+      "userId": "user_2"
+    },
+    {
+      "id": "sale_5",
+      "client": "Roberto Mendes",
+      "items": [
+        { "productId": "prod_1", "name": "Smartphone X200", "price": 1499, "quantity": 1, "total": 1499 },
+        { "productId": "prod_3", "name": "Camiseta Básica", "price": 49.90, "quantity": 2, "total": 99.80 }
+      ],
+      "total": 1598.80,
+      "cost": 830,
+      "date": "2025-12-24",
+      "userId": "user_3"
+    }
+  ],
+  "logs": []
+}

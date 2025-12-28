@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão Empresarial Pro</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --color-primary: #1E3A5F;
+            --color-primary-light: #2E5077;
+            --color-primary-dark: #0F2440;
+            --color-secondary: #5B4B8A;
+            --color-secondary-light: #7B6BAA;
+            --color-success: #27AE60;
+            --color-success-light: #E8F8F0;
+            --color-warning: #F39C12;
+            --color-warning-light: #FEF9E7;
+            --color-danger: #E74C3C;
+            --color-danger-light: #FDEDEC;
+            --color-info: #3498DB;
+            --color-info-light: #EBF5FB;
+            --color-gray-50: #F9FAFB;
+            --color-gray-100: #F3F4F6;
+            --color-gray-200: #E5E7EB;
+            --color-gray-300: #D1D5DB;
+            --color-gray-400: #9CA3AF;
+            --color-gray-500: #6B7280;
+            --color-gray-600: #4B5563;
+            --color-gray-700: #374151;
+            --color-gray-800: #1F2937;
+            --color-gray-900: #111827;
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --font-size-2xl: 1.5rem;
+            --font-size-3xl: 1.875rem;
+            --font-size-4xl: 2.25rem;
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+            --spacing-2xl: 3rem;
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            --radius-full: 9999px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --transition-fast: 150ms ease;
+            --transition-base: 250ms ease;
+            --transition-slow: 350ms ease;
+            --z-dropdown: 100;
+            --z-sticky: 200;
+            --z-fixed: 300;
+            --z-modal-backdrop: 400;
+            --z-modal: 500;
+            --z-toast: 600;
+            --z-filter-panel: 700;
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 16px; scroll-behavior: smooth; }
+        body { font-family: var(--font-family); font-size: var(--font-size-base); line-height: 1.6; color: var(--color-gray-800); background: var(--color-gray-50); min-height: 100vh; }
+        
+        .toast-container { position: fixed; top: var(--spacing-lg); right: var(--spacing-lg); z-index: var(--z-toast); display: flex; flex-direction: column; gap: var(--spacing-sm); max-width: 400px; }
+        .toast { display: flex; align-items: flex-start; gap: var(--spacing-md); padding: var(--spacing-md) var(--spacing-lg); background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); border-left: 4px solid; animation: slideInRight 0.3s ease forwards; opacity: 0; transform: translateX(100%); }
+        .toast.success { border-left-color: var(--color-success); }
+        .toast.error { border-left-color: var(--color-danger); }
+        .toast.warning { border-left-color: var(--color-warning); }
+        .toast.info { border-left-color: var(--color-info); }
+        @keyframes slideInRight { to { opacity: 1; transform: translateX(0); } }
+        @keyframes slideOutRight { to { opacity: 0; transform: translateX(100%); } }
+        .toast.hiding { animation: slideOutRight 0.3s ease forwards; }
+        .toast-icon { flex-shrink: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-full); }
+        .toast.success .toast-icon { background: var(--color-success-light); color: var(--color-success); }
+        .toast.error .toast-icon { background: var(--color-danger-light); color: var(--color-danger); }
+        .toast.warning .toast-icon { background: var(--color-warning-light); color: var(--color-warning); }
+        .toast.info .toast-icon { background: var(--color-info-light); color: var(--color-info); }
+        .toast-content { flex: 1; min-width: 0; }
+        .toast-title { font-weight: 600; font-size: var(--font-size-sm); color: var(--color-gray-800); margin-bottom: 2px; }
+        .toast-message { font-size: var(--font-size-sm); color: var(--color-gray-600); }
+        .toast-close { flex-shrink: 0; width: 20px; height: 20px; border: none; background: transparent; color: var(--color-gray-400); cursor: pointer; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+        .toast-close:hover { background: var(--color-gray-100); color: var(--color-gray-600); }
+        
+        .app-container { display: flex; flex-direction: column; min-height: 100vh; }
+        .app-header { background: white; border-bottom: 1px solid var(--color-gray-200); padding: var(--spacing-md) var(--spacing-xl); position: sticky; top: 0; z-index: var(--z-sticky); }
+        .header-content { max-width: 1400px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-lg); }
+        .logo-section { display: flex; align-items: center; gap: var(--spacing-md); }
+        .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: var(--font-size-lg); }
+        .logo-text h1 { font-size: var(--font-size-xl); font-weight: 700; color: var(--color-gray-900); line-height: 1.2; }
+        .logo-text p { font-size: var(--font-size-xs); color: var(--color-gray-500); margin-top: 2px; }
+        .header-actions { display: flex; align-items: center; gap: var(--spacing-md); }
+        .date-display { font-size: var(--font-size-sm); color: var(--color-gray-600); padding: var(--spacing-sm) var(--spacing-md); background: var(--color-gray-100); border-radius: var(--radius-md); }
+        .notification-btn { position: relative; width: 40px; height: 40px; border: none; background: var(--color-gray-100); border-radius: var(--radius-md); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+        .notification-btn:hover { background: var(--color-gray-200); }
+        .notification-badge { position: absolute; top: -4px; right: -4px; width: 18px; height: 18px; background: var(--color-danger); color: white; font-size: 10px; font-weight: 600; border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; }
+        
+        .app-nav { background: white; border-bottom: 1px solid var(--color-gray-200); padding: 0 var(--spacing-xl); }
+        .nav-container { max-width: 1400px; margin: 0 auto; display: flex; gap: var(--spacing-xs); overflow-x: auto; }
+        .nav-tab { padding: var(--spacing-md) var(--spacing-lg); font-size: var(--font-size-sm); font-weight: 500; color: var(--color-gray-600); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; transition: all var(--transition-fast); display: flex; align-items: center; gap: var(--spacing-sm); }
+        .nav-tab:hover { color: var(--color-primary); background: var(--color-gray-50); }
+        .nav-tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); background: var(--color-gray-50); }
+        .nav-tab svg { width: 18px; height: 18px; }
+        
+        .app-main { flex: 1; padding: var(--spacing-xl); }
+        .main-container { max-width: 1400px; margin: 0 auto; }
+        .tab-panel { display: none; animation: fadeIn 0.2s ease; }
+        .tab-panel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .section { background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--color-gray-200); margin-bottom: var(--spacing-xl); overflow: hidden; transition: box-shadow var(--transition-base); }
+        .section:hover { box-shadow: var(--shadow-md); }
+        .section-header { padding: var(--spacing-lg); border-bottom: 1px solid var(--color-gray-200); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--spacing-md); }
+        .section-title { display: flex; align-items: center; gap: var(--spacing-sm); font-size: var(--font-size-lg); font-weight: 600; color: var(--color-gray-800); }
+        .section-title svg { width: 20px; height: 20px; color: var(--color-primary); }
+        .section-body { padding: var(--spacing-lg); }
+        
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--spacing-lg); margin-bottom: var(--spacing-xl); }
+        .metric-card { background: white; border-radius: var(--radius-lg); padding: var(--spacing-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--color-gray-200); transition: all var(--transition-base); position: relative; overflow: hidden; }
+        .metric-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+        .metric-card.revenue::before { background: var(--color-success); }
+        .metric-card.expenses::before { background: var(--color-danger); }
+        .metric-card.profit::before { background: var(--color-primary); }
+        .metric-card.stock::before { background: var(--color-info); }
+        .metric-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: var(--spacing-md); }
+        .metric-icon { width: 40px; height: 40px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; }
+        .metric-card.revenue .metric-icon { background: var(--color-success-light); color: var(--color-success); }
+        .metric-card.expenses .metric-icon { background: var(--color-danger-light); color: var(--color-danger); }
+        .metric-card.profit .metric-icon { background: var(--color-primary); color: white; }
+        .metric-card.stock .metric-icon { background: var(--color-info-light); color: var(--color-info); }
+        .metric-trend { display: flex; align-items: center; gap: var(--spacing-xs); font-size: var(--font-size-xs); font-weight: 500; padding: 4px 8px; border-radius: var(--radius-full); }
+        .metric-trend.up { background: var(--color-success-light); color: var(--color-success); }
+        .metric-trend.down { background: var(--color-danger-light); color: var(--color-danger); }
+        .metric-trend.neutral { background: var(--color-gray-100); color: var(--color-gray-500); }
+        .metric-value { font-size: var(--font-size-3xl); font-weight: 700; color: var(--color-gray-900); margin-bottom: var(--spacing-xs); }
+        .metric-label { font-size: var(--font-size-sm); color: var(--color-gray-500); }
+        
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: var(--spacing-lg); margin-bottom: var(--spacing-xl); }
+        .chart-card { background: white; border-radius: var(--radius-lg); padding: var(--spacing-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--color-gray-200); }
+        .chart-card h3 { font-size: var(--font-size-lg); font-weight: 600; color: var(--color-gray-800); margin-bottom: var(--spacing-lg); }
+        .chart-container { position: relative; height: 300px; }
+        
+        .alerts-section { background: linear-gradient(135deg, var(--color-warning-light) 0%, var(--color-danger-light) 100%); border-radius: var(--radius-lg); padding: var(--spacing-lg); margin-bottom: var(--spacing-xl); }
+        .alerts-title { display: flex; align-items: center; gap: var(--spacing-sm); font-size: var(--font-size-lg); font-weight: 600; color: var(--color-gray-800); margin-bottom: var(--spacing-md); }
+        .alerts-list { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+        .alert-item { display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); background: white; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
+        .alert-item.critical { border-left: 4px solid var(--color-danger); }
+        .alert-item.warning { border-left: 4px solid var(--color-warning); }
+        .alert-item.info { border-left: 4px solid var(--color-info); }
+        .alert-icon { width: 32px; height: 32px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .alert-item.critical .alert-icon { background: var(--color-danger-light); color: var(--color-danger); }
+        .alert-item.warning .alert-icon { background: var(--color-warning-light); color: var(--color-warning); }
+        .alert-item.info .alert-icon { background: var(--color-info-light); color: var(--color-info); }
+        .alert-content { flex: 1; }
+        .alert-message { font-weight: 500; color: var(--color-gray-800); }
+        .alert-time { font-size: var(--font-size-xs); color: var(--color-gray-500); margin-top: 2px; }
+        .alert-action { padding: var(--spacing-sm) var(--spacing-md); font-size: var(--font-size-sm); font-weight: 500; color: var(--color-primary); background: transparent; border: 1px solid var(--color-primary); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); }
+        .alert-action:hover { background: var(--color-primary); color: white; }
+        
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-lg); }
+        .form-group { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+        .form-label { font-size: var(--font-size-sm); font-weight: 500; color: var(--color-gray-700); }
+        .form-label .required { color: var(--color-danger); }
+        .form-input, .form-select { padding: var(--spacing-sm) var(--spacing-md); font-size: var(--font-size-sm); border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); background: white; color: var(--color-gray-800); transition: all var(--transition-fast); width: 100%; }
+        .form-input:focus, .form-select:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1); }
+        .form-input.error, .form-select.error { border-color: var(--color-danger); }
+        .form-error { font-size: var(--font-size-xs); color: var(--color-danger); display: none; }
+        .form-error.visible { display: block; }
+        
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-sm); padding: var(--spacing-sm) var(--spacing-lg); font-size: var(--font-size-sm); font-weight: 500; border: none; border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); white-space: nowrap; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-primary { background: var(--color-primary); color: white; }
+        .btn-primary:hover:not(:disabled) { background: var(--color-primary-light); transform: translateY(-1px); }
+        .btn-secondary { background: var(--color-gray-100); color: var(--color-gray-700); }
+        .btn-secondary:hover:not(:disabled) { background: var(--color-gray-200); }
+        .btn-danger { background: var(--color-danger); color: white; }
+        .btn-danger:hover:not(:disabled) { background: #C0392B; }
+        .btn-success { background: var(--color-success); color: white; }
+        .btn-success:hover:not(:disabled) { background: #229954; }
+        .btn svg { width: 16px; height: 16px; }
+        
+        .table-container { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--color-gray-200); }
+        table { width: 100%; border-collapse: collapse; font-size: var(--font-size-sm); }
+        th { text-align: left; padding: var(--spacing-md); font-weight: 600; color: var(--color-gray-700); background: var(--color-gray-50); border-bottom: 1px solid var(--color-gray-200); white-space: nowrap; }
+        td { padding: var(--spacing-md); border-bottom: 1px solid var(--color-gray-100); color: var(--color-gray-700); }
+        tbody tr { transition: background var(--transition-fast); }
+        tbody tr:hover { background: var(--color-gray-50); }
+        
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; font-size: var(--font-size-xs); font-weight: 500; border-radius: var(--radius-full); white-space: nowrap; }
+        .badge-success { background: var(--color-success-light); color: var(--color-success); }
+        .badge-warning { background: var(--color-warning-light); color: var(--color-warning); }
+        .badge-danger { background: var(--color-danger-light); color: var(--color-danger); }
+        .badge-info { background: var(--color-info-light); color: var(--color-info); }
+        .badge-gray { background: var(--color-gray-100); color: var(--color-gray-600); }
+        
+        .empty-state { padding: var(--spacing-2xl); text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--spacing-md); }
+        .empty-state-icon { width: 64px; height: 64px; color: var(--color-gray-300); margin-bottom: var(--spacing-sm); }
+        .empty-state-title { font-size: var(--font-size-lg); font-weight: 600; color: var(--color-gray-700); }
+        .empty-state-message { font-size: var(--font-size-sm); color: var(--color-gray-500); max-width: 400px; }
+        
+        .skeleton { background: linear-gradient(90deg, var(--color-gray-200) 25%, var(--color-gray-100) 50%, var(--color-gray-200) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: var(--radius-sm); }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .skeleton-text { height: 14px; width: 100%; }
+        .skeleton-text-sm { height: 12px; width: 60%; }
+        .skeleton-text-lg { height: 20px; width: 80%; }
+        .skeleton-avatar { width: 40px; height: 40px; border-radius: var(--radius-full); }
+        .skeleton-badge { height: 24px; width: 80px; border-radius: var(--radius-full); }
+        
+        .search-bar { display: flex; align-items: center; gap: var(--spacing-md); margin-bottom: var(--spacing-lg); flex-wrap: wrap; }
+        .search-input-wrapper { position: relative; flex: 1; max-width: 400px; }
+        .search-input-wrapper svg { position: absolute; left: var(--spacing-md); top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--color-gray-400); }
+        .search-input { width: 100%; padding: var(--spacing-sm) var(--spacing-md) var(--spacing-sm) 44px; font-size: var(--font-size-sm); border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); transition: all var(--transition-fast); }
+        .search-input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1); }
+        .filter-btn { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm) var(--spacing-md); font-size: var(--font-size-sm); color: var(--color-gray-600); background: white; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); }
+        .filter-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+        .filter-btn.active { background: var(--color-primary); border-color: var(--color-primary); color: white; }
+        
+        .filter-panel { position: fixed; top: 0; right: -450px; width: 450px; height: 100vh; background: white; box-shadow: var(--shadow-xl); z-index: var(--z-filter-panel); transition: right var(--transition-base); overflow-y: auto; }
+        .filter-panel.active { right: 0; }
+        .filter-panel-header { padding: var(--spacing-lg); border-bottom: 1px solid var(--color-gray-200); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: white; z-index: 1; }
+        .filter-panel-title { font-size: var(--font-size-lg); font-weight: 600; color: var(--color-gray-800); }
+        .filter-panel-close { width: 32px; height: 32px; border: none; background: transparent; color: var(--color-gray-400); cursor: pointer; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+        .filter-panel-close:hover { background: var(--color-gray-100); color: var(--color-gray-600); }
+        .filter-panel-body { padding: var(--spacing-lg); }
+        .filter-group { margin-bottom: var(--spacing-lg); }
+        .filter-group-title { font-size: var(--font-size-sm); font-weight: 600; color: var(--color-gray-700); margin-bottom: var(--spacing-sm); }
+        .filter-options { display: flex; flex-direction: column; gap: var(--spacing-xs); }
+        .filter-option { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); }
+        .filter-option:hover { background: var(--color-gray-50); }
+        .filter-option input { width: 16px; height: 16px; accent-color: var(--color-primary); }
+        .filter-option span { font-size: var(--font-size-sm); color: var(--color-gray-700); }
+        .filter-panel-footer { padding: var(--spacing-lg); border-top: 1px solid var(--color-gray-200); position: sticky; bottom: 0; background: white; display: flex; gap: var(--spacing-md); }
+        .filter-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: calc(var(--z-filter-panel) - 1); opacity: 0; visibility: hidden; transition: all var(--transition-base); }
+        .filter-overlay.active { opacity: 1; visibility: visible; }
+        
+        .editable { cursor: pointer; padding: 4px 8px; border-radius: var(--radius-sm); transition: all var(--transition-fast); }
+        .editable:hover { background: var(--color-gray-100); }
+        .editable.editing { background: white; padding: 4px; }
+        .editable-input { width: 100%; padding: 4px 8px; font-size: var(--font-size-sm); border: 1px solid var(--color-primary); border-radius: var(--radius-sm); outline: none; }
+        
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: var(--z-modal-backdrop); opacity: 0; visibility: hidden; transition: all var(--transition-base); }
+        .modal-backdrop.active { opacity: 1; visibility: visible; }
+        .modal { background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow-xl); max-width: 500px; width: 90%; max-height: 90vh; overflow: hidden; transform: scale(0.9); transition: transform var(--transition-base); }
+        .modal-backdrop.active .modal { transform: scale(1); }
+        .modal-header { padding: var(--spacing-lg); border-bottom: 1px solid var(--color-gray-200); display: flex; align-items: center; justify-content: space-between; }
+        .modal-title { font-size: var(--font-size-lg); font-weight: 600; color: var(--color-gray-800); }
+        .modal-close { width: 32px; height: 32px; border: none; background: transparent; color: var(--color-gray-400); cursor: pointer; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+        .modal-close:hover { background: var(--color-gray-100); color: var(--color-gray-600); }
+        .modal-body { padding: var(--spacing-lg); overflow-y: auto; max-height: calc(90vh - 140px); }
+        .modal-footer { padding: var(--spacing-lg); border-top: 1px solid var(--color-gray-200); display: flex; justify-content: flex-end; gap: var(--spacing-md); }
+        
+        .text-success { color: var(--color-success); }
+        .text-danger { color: var(--color-danger); }
+        .text-warning { color: var(--color-warning); }
+        .text-muted { color: var(--color-gray-500); }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-sm { gap: var(--spacing-sm); }
+        .gap-md { gap: var(--spacing-md); }
+        .mb-sm { margin-bottom: var(--spacing-sm); }
+        .mb-md { margin-bottom: var(--spacing-md); }
+        .mb-lg { margin-bottom: var(--spacing-lg); }
+        .mt-lg { margin-top: var(--spacing-lg); }
+        
+        @media (max-width: 768px) {
+            .app-header { padding: var(--spacing-md); }
+            .app-nav { padding: 0 var(--spacing-md); }
+            .app-main { padding: var(--spacing-md); }
+            .header-content { flex-wrap: wrap; }
+            .logo-text h1 { font-size: var(--font-size-lg); }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .search-bar { flex-direction: column; align-items: stretch; }
+            .search-input-wrapper { max-width: none; }
+            .section-header { flex-direction: column; align-items: flex-start; }
+            .filter-panel { width: 100%; right: -100%; }
+            .charts-grid { grid-template-columns: 1fr; }
+            .chart-container { height: 250px; }
+        }
+        
+        .spinner { width: 20px; height: 20px; border: 2px solid var(--color-gray-200); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .btn .spinner { width: 16px; height: 16px; }
+        
+        .action-buttons { display: flex; gap: var(--spacing-xs); }
+        .action-btn { width: 28px; height: 28px; border: none; background: transparent; color: var(--color-gray-400); cursor: pointer; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); }
+        .action-btn:hover { background: var(--color-gray-100); color: var(--color-gray-600); }
+        .action-btn.delete:hover { background: var(--color-danger-light); color: var(--color-danger); }
+        .action-btn svg { width: 16px; height: 16px; }
+        
+        .pagination { display: flex; align-items: center; justify-content: center; gap: var(--spacing-sm); margin-top: var(--spacing-lg); }
+        .pagination-btn { padding: var(--spacing-sm) var(--spacing-md); font-size: var(--font-size-sm); color: var(--color-gray-600); background: white; border: 1px solid var(--color-gray-300); border-radius: var(--radius-md); cursor: pointer; transition: all var(--transition-fast); }
+        .pagination-btn:hover:not(:disabled) { border-color: var(--color-primary); color: var(--color-primary); }
+        .pagination-btn.active { background: var(--color-primary); border-color: var(--color-primary); color: white; }
+        .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .pagination-info { font-size: var(--font-size-sm); color: var(--color-gray-500); padding: 0 var(--spacing-md); }
+    </style>
+</head>
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <!-- Painel de Filtros -->
+    <div class="filter-overlay" id="filterOverlay" onclick="FilterPanel.close()"></div>
+    <div class="filter-panel" id="filterPanel">
+        <div class="filter-panel-header">
+            <h3 class="filter-panel-title">Filtros Avançados</h3>
+            <button class="filter-panel-close" onclick="FilterPanel.close()">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="filter-panel-body" id="filterPanelBody">
+            <!-- Conteúdo dinâmico -->
+        </div>
+        <div class="filter-panel-footer">
+            <button class="btn btn-secondary" onclick="FilterPanel.clear()">Limpar</button>
+            <button class="btn btn-primary" onclick="FilterPanel.apply()">Aplicar</button>
+        </div>
+    </div>
+    
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">SG</div>
+                    <div class="logo-text">
+                        <h1>Sistema de Gestão Pro</h1>
+                        <p>Gestão Empresarial Inteligente</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="date-display" id="currentDate"></div>
+                    <button class="notification-btn" onclick="Notifications.showCenter()">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                        <span class="notification-badge" id="notificationCount" style="display: none;">0</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+        
+        <nav class="app-nav">
+            <div class="nav-container">
+                <button class="nav-tab active" data-tab="dashboard">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    Dashboard
+                </button>
+                <button class="nav-tab" data-tab="estoque">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                    Estoque
+                </button>
+                <button class="nav-tab" data-tab="vendas">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    Vendas
+                </button>
+                <button class="nav-tab" data-tab="despesas">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    Despesas
+                </button>
+                <button class="nav-tab" data-tab="relatorios">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    Relatórios
+                </button>
+                <button class="nav-tab" data-tab="configuracoes">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Configurações
+                </button>
+            </div>
+        </nav>
+        
+        <main class="app-main">
+            <div class="main-container">
+                <!-- DASHBOARD -->
+                <div id="dashboard" class="tab-panel active">
+                    <!-- Alertas Inteligentes -->
+                    <div class="alerts-section" id="alertsSection" style="display: none;">
+                        <div class="alerts-title">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                            <span>Alertas Inteligentes (<span id="alertCount">0</span>)</span>
+                        </div>
+                        <div class="alerts-list" id="alertsList"></div>
+                    </div>
+                    
+                    <div class="dashboard-grid">
+                        <div class="metric-card revenue">
+                            <div class="metric-header">
+                                <div class="metric-icon">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <span class="metric-trend up" id="faturamentoTrend">+0%</span>
+                            </div>
+                            <div class="metric-value" id="faturamentoMes">KZ 0,00</div>
+                            <div class="metric-label">Faturamento do Mês</div>
+                        </div>
+                        
+                        <div class="metric-card profit">
+                            <div class="metric-header">
+                                <div class="metric-icon">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                                </div>
+                                <span class="metric-trend" id="lucroTrend">--</span>
+                            </div>
+                            <div class="metric-value" id="lucroLiquido">KZ 0,00</div>
+                            <div class="metric-label">Lucro Líquido</div>
+                        </div>
+                        
+                        <div class="metric-card expenses">
+                            <div class="metric-header">
+                                <div class="metric-icon">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                </div>
+                                <span class="metric-trend down" id="despesasTrend">+0%</span>
+                            </div>
+                            <div class="metric-value" id="despesasMes">KZ 0,00</div>
+                            <div class="metric-label">Despesas do Mês</div>
+                        </div>
+                        
+                        <div class="metric-card stock">
+                            <div class="metric-header">
+                                <div class="metric-icon">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                </div>
+                                <span class="metric-trend neutral" id="estoqueTrend">--</span>
+                            </div>
+                            <div class="metric-value" id="valorEstoque">KZ 0,00</div>
+                            <div class="metric-label">Valor do Estoque</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Gráficos -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3>Vendas por Categoria</h3>
+                            <div class="chart-container">
+                                <canvas id="chartVendasCategoria"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3>Evolução Financeira (6 meses)</h3>
+                            <div class="chart-container">
+                                <canvas id="chartEvolucao"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                Alertas de Estoque
+                            </h2>
+                        </div>
+                        <div class="section-body">
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Produto</th>
+                                            <th>Categoria</th>
+                                            <th>Quantidade</th>
+                                            <th>Mínimo</th>
+                                            <th>Status</th>
+                                            <th>Ação</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="estoqueBaixoTable"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ESTOQUE -->
+                <div id="estoque" class="tab-panel">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                Cadastrar Produto
+                            </h2>
+                        </div>
+                        <div class="section-body">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Código <span class="required">*</span></label>
+                                    <input type="text" class="form-input" id="codigo" placeholder="Ex: ELE001">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Nome <span class="required">*</span></label>
+                                    <input type="text" class="form-input" id="nome" placeholder="Ex: iPhone 15 Pro">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Categoria <span class="required">*</span></label>
+                                    <select class="form-select" id="categoria">
+                                        <option value="">Selecione...</option>
+                                        <option value="Smartphones">Smartphones</option>
+                                        <option value="Notebooks">Notebooks</option>
+                                        <option value="Tablets">Tablets</option>
+                                        <option value="Acessórios">Acessórios</option>
+                                        <option value="TVs">TVs</option>
+                                        <option value="Áudio">Áudio</option>
+                                        <option value="Gaming">Gaming</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Quantidade</label>
+                                    <input type="number" class="form-input" id="quantidade" placeholder="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Custo (KZ) <span class="required">*</span></label>
+                                    <input type="number" class="form-input" id="precoCusto" placeholder="0,00" step="0.01" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Venda (KZ) <span class="required">*</span></label>
+                                    <input type="number" class="form-input" id="precoVenda" placeholder="0,00" step="0.01" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Mínimo</label>
+                                    <input type="number" class="form-input" id="estoqueMinimo" placeholder="5" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Fornecedor</label>
+                                    <input type="text" class="form-input" id="fornecedor" placeholder="Ex: Distribuidora ABC">
+                                </div>
+                            </div>
+                            <div class="mt-lg">
+                                <button class="btn btn-primary" onclick="adicionarProduto()">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                    Adicionar Produto
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                Produtos em Estoque
+                            </h2>
+                            <div class="flex gap-sm">
+                                <button class="btn btn-secondary" onclick="FilterPanel.open('estoque')">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                                    Filtrar
+                                </button>
+                                <button class="btn btn-secondary" onclick="exportarProdutosPDF()">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    PDF
+                                </button>
+                            </div>
+                        </div>
+                        <div class="section-body">
+                            <div class="search-bar">
+                                <div class="search-input-wrapper">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                    <input type="text" class="search-input" id="searchProdutos" placeholder="Pesquisar produtos...">
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Código</th>
+                                            <th>Produto</th>
+                                            <th>Categoria</th>
+                                            <th class="editable-col" data-field="quantidade">Qtd.</th>
+                                            <th>Custo</th>
+                                            <th class="editable-col" data-field="precoVenda">Venda</th>
+                                            <th>Margem</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabelaEstoque"></tbody>
+                                </table>
+                            </div>
+                            <div class="pagination" id="paginationEstoque"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- VENDAS -->
+                <div id="vendas" class="tab-panel">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                Registrar Venda
+                            </h2>
+                        </div>
+                        <div class="section-body">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Data <span class="required">*</span></label>
+                                    <input type="date" class="form-input" id="dataVenda">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Produto <span class="required">*</span></label>
+                                    <select class="form-select" id="produtoVenda">
+                                        <option value="">Selecione...</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Quantidade <span class="required">*</span></label>
+                                    <input type="number" class="form-input" id="qtyVenda" placeholder="1" min="1">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Venda (KZ) <span class="required">*</span></label>
+                                    <input type="number" class="form-input" id="precoVendaAtual" placeholder="0,00" step="0.01" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Cliente</label>
+                                    <input type="text" class="form-input" id="cliente" placeholder="Nome (opcional)">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Pagamento</label>
+                                    <select class="form-select" id="formaPagamento">
+                                        <option value="Dinheiro">Dinheiro</option>
+                                        <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                        <option value="Cartão de Débito">Cartão de Débito</option>
+                                        <option value="PIX">PIX</option>
+                                        <option value="Transferência">Transferência</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-lg">
+                                <button class="btn btn-success" onclick="registrarVenda()">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Registrar Venda
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                                Vendas Realizadas
+                            </h2>
+                            <div class="flex gap-sm">
+                                <button class="btn btn-secondary" onclick="FilterPanel.open('vendas')">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                                    Filtrar
+                                </button>
+                                <button class="btn btn-secondary" onclick="exportarVendasPDF()">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    PDF
+                                </button>
+                            </div>
+                        </div>
+                        <div class="section-body">
+                            <div class="search-bar">
+                                <div class="search-input-wrapper">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                    <input type="text" class="search-input" id="searchVendas" placeholder="Pesquisar vendas...">
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Produto</th>
+                                            <th>Qtd.</th>
+                                            <th>Total</th>
+                                            <th>Lucro</th>
+                                            <th>Cliente</th>
+                                            <th>Pagamento</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabelaVendas"></tbody>
+                                </table>
+                            </div>
+                            <div class="pagination" id="paginationVendas"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DESPESAS -->
+                <div id="despesas" class="tab-panel">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                Registrar Despesa
+                            </h2>
+                        </div>
+                        <div class="section-body">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Data <span class="required">*</span></label>
+                                    <input type="date" class="form-input" id="dataDespesa">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Descrição <span class="required">*</span></label>
+                                    <input type="text" class="form-input" id="descricaoDespesa" placeholder="Ex: Aluguel">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Categoria <span class="required">*</span></label>
+                                    <select class="form-select" id="categoriaDespesa">
+                                        <option value="Aluguel">Aluguel</option>
+                                        <option value="Energia">Energia</option>
+                                        <option value="Internet">Internet</option>
+                                        <option value="Marketing">Marketing</option>
+                                        <option value="Transporte">Transporte</option>
+                                        <option value="Manutenção">Manutenção</option>
+                                        <option value="Impostos">Impostos</option>
+                                        <option value="Salários">Salários</option>
+                                        <option value="Outros">Outros</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Valor (KZ) <span class="required">*</span></label>
+                                    <input type="number" class="form-input" id="valorDespesa" placeholder="0,00" step="0.01" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Pagamento</label>
+                                    <select class="form-select" id="pagamentoDespesa">
+                                        <option value="Dinheiro">Dinheiro</option>
+                                        <option value="Cartão">Cartão</option>
+                                        <option value="PIX">PIX</option>
+                                        <option value="Transferência">Transferência</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mt-lg">
+                                <button class="btn btn-primary" onclick="adicionarDespesa()">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                                    Adicionar Despesa
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                                Despesas Registradas
+                            </h2>
+                        </div>
+                        <div class="section-body">
+                            <div class="search-bar">
+                                <div class="search-input-wrapper">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                    <input type="text" class="search-input" id="searchDespesas" placeholder="Pesquisar despesas...">
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Descrição</th>
+                                            <th>Categoria</th>
+                                            <th>Valor</th>
+                                            <th>Pagamento</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabelaDespesas"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- RELATÓRIOS -->
+                <div id="relatorios" class="tab-panel">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                Relatório Mensal
+                            </h2>
+                        </div>
+                        <div class="section-body">
+                            <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                                <div class="form-group">
+                                    <label class="form-label">Mês/Ano</label>
+                                    <input type="month" class="form-input" id="mesRelatorio">
+                                </div>
+                                <div class="form-group" style="align-self: end;">
+                                    <button class="btn btn-primary" onclick="gerarRelatorio()">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                        Gerar
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="exportarRelatorioPDF()" id="btnExportarPDF" style="display: none;">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                        Exportar PDF
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section" id="relatorioResultado" style="display: none;">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                Resultado do Período
+                            </h2>
+                        </div>
+                        <div class="section-body">
+                            <div class="dashboard-grid">
+                                <div class="metric-card revenue">
+                                    <div class="metric-value text-success" id="relVendas">KZ 0,00</div>
+                                    <div class="metric-label">Total de Vendas</div>
+                                </div>
+                                <div class="metric-card expenses">
+                                    <div class="metric-value text-danger" id="relDespesas">KZ 0,00</div>
+                                    <div class="metric-label">Total de Despesas</div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-value" id="relLucroBruto">KZ 0,00</div>
+                                    <div class="metric-label">Lucro Bruto</div>
+                                </div>
+                                <div class="metric-card profit">
+                                    <div class="metric-value" id="relLucroLiquido">KZ 0,00</div>
+                                    <div class="metric-label">Lucro Líquido</div>
+                                </div>
+                            </div>
+                            
+                            <h3 class="mb-md mt-lg" style="font-size: var(--font-size-lg); font-weight: 600;">Vendas por Categoria</h3>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Categoria</th>
+                                            <th>Quantidade</th>
+                                            <th>Faturamento</th>
+                                            <th>% do Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="vendasPorCategoria"></tbody>
+                                </table>
+                            </div>
+                            
+                            <h3 class="mb-md mt-lg" style="font-size: var(--font-size-lg); font-weight: 600;">Despesas por Categoria</h3>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Categoria</th>
+                                            <th>Total</th>
+                                            <th>% do Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="despesasPorCategoria"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CONFIGURAÇÕES -->
+                <div id="configuracoes" class="tab-panel">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                                Backup e Restauração
+                            </h2>
+                        </div>
+                        <div class="section-body">
+                            <p class="text-muted mb-md">Proteja seus dados com backups automáticos.</p>
+                            <div class="flex gap-sm">
+                                <button class="btn btn-primary" onclick="fazerBackup()">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                    Backup
+                                </button>
+                                <button class="btn btn-secondary" onclick="document.getElementById('fileBackup').click()">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                    Restaurar
+                                </button>
+                                <input type="file" id="fileBackup" accept=".json" style="display: none;" onchange="restaurarBackup(this)">
+                                <button class="btn btn-danger" onclick="limparDados()">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    Limpar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="section">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                                Configurações de Alertas
+                            </h2>
+                        </div>
+                        <div class="section-body">
+                            <div class="form-group" style="margin-bottom: var(--spacing-md);">
+                                <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
+                                    <input type="checkbox" id="alertaEstoque" checked>
+                                    <span>Alertar quando o estoque estiver baixo</span>
+                                </label>
+                            </div>
+                            <div class="form-group" style="margin-bottom: var(--spacing-md);">
+                                <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
+                                    <input type="checkbox" id="alertaMargem" checked>
+                                    <span>Alertar quando a margem de lucro estiver abaixo de 15%</span>
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
+                                    <input type="checkbox" id="alertaDespesa" checked>
+                                    <span>Alertar quando houver despesas acima da média</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Modal -->
+    <div class="modal-backdrop" id="modalConfirmacao">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitulo">Confirmar Ação</h3>
+                <button class="modal-close" onclick="Modal.hide()">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="modalMensagem">Tem certeza?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="Modal.hide()">Cancelar</button>
+                <button class="btn btn-danger" id="modalBtnConfirmar" onclick="Modal.confirm()">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ========================================
+        // MÓDULO DE ARMAZENAMENTO
+        // ========================================
+        const Store = {
+            get(key) { return JSON.parse(localStorage.getItem(key)) || []; },
+            set(key, data) { localStorage.setItem(key, JSON.stringify(data)); },
+            getAll() { return { produtos: this.get('produtos'), vendas: this.get('vendas'), despesas: this.get('despesas') }; },
+            saveAll(data) { this.set('produtos', data.produtos); this.set('vendas', data.vendas); this.set('despesas', data.despesas'); }
+        };
+        
+        // ========================================
+        // MÓDULO DE UTILITÁRIOS
+        // ========================================
+        const Utils = {
+            formatCurrency(value) { return new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA', minimumFractionDigits: 2 }).format(value); },
+            formatDate(dateStr) { const d = new Date(dateStr + 'T00:00:00'); return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' }); },
+            formatMonthYear(dateStr) { const [y, m] = dateStr.split('-'); return new Date(y, m - 1).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }); },
+            getCurrentDate() { return new Date().toISOString().split('T')[0]; },
+            getCurrentMonth() { return new Date().toISOString().slice(0, 7); },
+            calculateMargin(cost, price) { return cost <= 0 ? 0 : ((price - cost) / cost * 100).toFixed(2); },
+            debounce(func, wait) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => func(...a), wait); }; }
+        };
+        
+        // ========================================
+        // MÓDULO DE NOTIFICAÇÕES
+        // ========================================
+        const Toast = {
+            container: null, init() { this.container = document.getElementById('toastContainer'); },
+            show(title, message, type = 'info', duration = 4000) {
+                const id = 'toast_' + Date.now();
+                const icons = { success: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>', error: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>', warning: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>', info: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' };
+                const t = document.createElement('div'); t.className = `toast ${type}`; t.id = id; t.innerHTML = `<div class="toast-icon">${icons[type]}</div><div class="toast-content"><div class="toast-title">${title}</div><div class="toast-message">${message}</div></div><button class="toast-close" onclick="Toast.remove('${id}')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>`;
+                this.container.appendChild(t); setTimeout(() => this.remove(id), duration); return id;
+            },
+            remove(id) { const t = document.getElementById(id); if (t) { t.classList.add('hiding'); setTimeout(() => t.remove(), 300); } },
+            success(m, t = 'Sucesso') { return this.show(t, m, 'success'); },
+            error(m, t = 'Erro') { return this.show(t, m, 'error'); },
+            warning(m, t = 'Aviso') { return this.show(t, m, 'warning'); },
+            info(m, t = 'Info') { return this.show(t, m, 'info'); }
+        };
+        
+        // ========================================
+        // MÓDULO DE MODAL
+        // ========================================
+        const Modal = { callback: null, show(title, message, onConfirm) { document.getElementById('modalTitulo').textContent = title; document.getElementById('modalMensagem').textContent = message; document.getElementById('modalConfirmacao').classList.add('active'); this.callback = onConfirm; }, hide() { document.getElementById('modalConfirmacao').classList.remove('active'); this.callback = null; }, confirm() { if (this.callback) this.callback(); this.hide(); } };
+        
+        // ========================================
+        // MÓDULO DE FILTROS AVANÇADOS
+        // ========================================
+        const FilterPanel = {
+            activeTab: null, filters: { estoque: {}, vendas: {}, despesas: {} },
+            open(tab) { this.activeTab = tab; const body = document.getElementById('filterPanelBody'); let html = '';
+                if (tab === 'estoque') {
+                    const cats = ['Smartphones', 'Notebooks', 'Tablets', 'Acessórios', 'TVs', 'Áudio', 'Gaming'];
+                    html += `<div class="filter-group"><div class="filter-group-title">Categoria</div><div class="filter-options">${cats.map(c => `<label class="filter-option"><input type="checkbox" name="categoria" value="${c}"><span>${c}</span></label>`).join('')}</div></div>`;
+                    html += `<div class="filter-group"><div class="filter-group-title">Status</div><div class="filter-options"><label class="filter-option"><input type="checkbox" name="status" value="critico"><span class="badge badge-danger">Crítico</span></label><label class="filter-option"><input type="checkbox" name="status" value="baixo"><span class="badge badge-warning">Baixo</span></label><label class="filter-option"><input type="checkbox" name="status" value="normal"><span class="badge badge-success">Normal</span></label></div></div>`;
+                } else if (tab === 'vendas') {
+                    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                    html += `<div class="filter-group"><div class="filter-group-title">Mês</div><div class="filter-options">${meses.map((m, i) => `<label class="filter-option"><input type="checkbox" name="mes" value="${i + 1}"><span>${m}</span></label>`).join('')}</div></div>`;
+                    html += `<div class="filter-group"><div class="filter-group-title">Forma de Pagamento</div><div class="filter-options"><label class="filter-option"><input type="checkbox" name="pagamento" value="Dinheiro"><span>Dinheiro</span></label><label class="filter-option"><input type="checkbox" name="pagamento" value="Cartão"><span>Cartão</span></label><label class="filter-option"><input type="checkbox" name="pagamento" value="PIX"><span>PIX</span></label></div></div>`;
+                } else if (tab === 'despesas') {
+                    const cats = ['Aluguel', 'Energia', 'Internet', 'Marketing', 'Transporte', 'Manutenção', 'Impostos', 'Salários', 'Outros'];
+                    html += `<div class="filter-group"><div class="filter-group-title">Categoria</div><div class="filter-options">${cats.map(c => `<label class="filter-option"><input type="checkbox" name="categoria" value="${c}"><span>${c}</span></label>`).join('')}</div></div>`;
+                }
+                body.innerHTML = html; document.getElementById('filterOverlay').classList.add('active'); document.getElementById('filterPanel').classList.add('active');
+            },
+            close() { document.getElementById('filterOverlay').classList.remove('active'); document.getElementById('filterPanel').classList.remove('active'); },
+            clear() { this.filters[this.activeTab] = {}; document.querySelectorAll('#filterPanelBody input').forEach(i => i.checked = false); this.apply(); },
+            apply() { this.filters[this.activeTab] = {}; document.querySelectorAll('#filterPanelBody input:checked').forEach(i => { const g = i.name; if (!this.filters[this.activeTab][g]) this.filters[this.activeTab][g] = []; this.filters[this.activeTab][g].push(i.value); }); this.close(); if (this.activeTab === 'estoque') pesquisarProdutos(); else if (this.activeTab === 'vendas') pesquisarVendas(); else if (this.activeTab === 'despesas') pesquisarDespesas(); Toast.success('Filtros aplicados'); }
+        };
+        
+        // ========================================
+        // MÓDULO DE EDIÇÃO INLINE
+        // ========================================
+        const InlineEdit = {
+            init() { document.querySelectorAll('.editable-col').forEach(col => { col.style.cursor = 'pointer'; col.title = 'Clique para editar'; col.addEventListener('click', (e) => this.startEdit(e.target)); }); },
+            startEdit(cell) {
+                if (cell.classList.contains('editing')) return;
+                const field = cell.dataset.field;
+                if (!field) return;
+                const row = cell.closest('tr');
+                const id = parseInt(row.dataset.id);
+                const tipo = row.dataset.tipo;
+                let value = cell.textContent;
+                cell.classList.add('editing'); cell.innerHTML = `<input type="${field === 'quantidade' || field === 'precoVenda' ? 'number' : 'text'}" class="editable-input" value="${value}">`;
+                const input = cell.querySelector('input'); input.focus(); input.select();
+                const save = () => { const newValue = input.value; if (value !== newValue && newValue) { this.save(tipo, id, field, newValue); cell.textContent = newValue; Toast.success('Atualizado com sucesso'); } else { cell.textContent = value; } cell.classList.remove('editing'); };
+                input.addEventListener('blur', save); input.addEventListener('keypress', (e) => { if (e.key === 'Enter') save(); });
+            },
+            save(tipo, id, field, value) { const data = Store.getAll(); if (tipo === 'produto') { const p = data.produtos.find(x => x.id === id); if (p) { p[field] = field === 'quantidade' || field === 'precoVenda' ? parseFloat(value) : value; Store.set('produtos', data.produtos); atualizarInterface(); verificarAlertas(); } } }
+        };
+        
+        // ========================================
+        // MÓDULO DE GRÁFICOS
+        // ========================================
+        const Charts = {
+            chartVendas: null, chartEvolucao: null,
+            init() { const ctx1 = document.getElementById('chartVendasCategoria'); const ctx2 = document.getElementById('chartEvolucao'); if (ctx1) { this.chartVendas = new Chart(ctx1, { type: 'doughnut', data: { labels: [], datasets: [{ data: [], backgroundColor: ['#1E3A5F', '#5B4B8A', '#27AE60', '#F39C12', '#E74C3C', '#3498DB', '#9B59B6'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } }); } if (ctx2) { this.chartEvolucao = new Chart(ctx2, { type: 'line', data: { labels: [], datasets: [{ label: 'Receita', data: [], borderColor: '#27AE60', tension: 0.4 }, { label: 'Despesas', data: [], borderColor: '#E74C3C', tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } } }); } },
+            updateVendas(data) { if (!this.chartVendas) return; const porCat = {}; data.forEach(v => { porCat[v.produtoCategoria] = (porCat[v.produtoCategoria] || 0) + v.total; }); this.chartVendas.data.labels = Object.keys(porCat); this.chartVendas.data.datasets[0].data = Object.values(porCat); this.chartVendas.update(); },
+            updateEvolucao(vendas, despesas) { if (!this.chartEvolucao) return; const meses = []; const dadosVendas = []; const dadosDespesas = []; for (let i = 5; i >= 0; i--) { const d = new Date(); d.setMonth(d.getMonth() - i); const key = d.toISOString().slice(0, 7); meses.push(d.toLocaleDateString('pt-BR', { month: 'short' })); dadosVendas.push(vendas.filter(v => v.data.startsWith(key)).reduce((s, v) => s + v.total, 0)); dadosDespesas.push(despesas.filter(d => d.data.startsWith(key)).reduce((s, d) => s + d.valor, 0)); } this.chartEvolucao.data.labels = meses; this.chartEvolucao.data.datasets[0].data = dadosVendas; this.chartEvolucao.data.datasets[1].data = dadosDespesas; this.chartEvolucao.update(); }
+        };
+        
+        // ========================================
+        // MÓDULO DE ALERTAS INTELIGENTES
+        // ========================================
+        const Alerts = {
+            lista: [],
+            check() { this.lista = []; const p = Store.get('produtos'); const v = Store.get('vendas'); const d = Store.get('despesas'); const margemMin = 15;
+                p.forEach(prod => { if (prod.quantidade === 0) { this.lista.push({ tipo: 'critical', msg: `${prod.nome} está sem estoque`, time: 'Agora', action: 'Repor' }); } else if (prod.quantidade <= prod.estoqueMinimo) { this.lista.push({ tipo: 'warning', msg: `${prod.nome} com estoque baixo (${prod.quantidade})`, time: 'Agora', action: 'Repor' }); } const m = Utils.calculateMargin(prod.precoCusto, prod.precoVenda); if (document.getElementById('alertaMargem').checked && parseFloat(m) < margemMin) { this.lista.push({ tipo: 'info', msg: `${prod.nome} com margem baixa (${m}%)`, time: 'Agora', action: 'Revisar' }); } });
+                const alertaDespesa = document.getElementById('alertaDespesa').checked; if (alertaDespesa) { const med = d.reduce((s, d) => s + d.valor, 0) / (d.length || 1); d.forEach(des => { if (des.valor > med * 2) { this.lista.push({ tipo: 'warning', msg: `${des.descricao} acima da média (${Utils.formatCurrency(des.valor)})`, time: Utils.formatDate(des.data), action: 'Analisar' }); } }); }
+                this.render();
+                const badge = document.getElementById('notificationCount'); if (this.lista.length > 0) { badge.textContent = this.lista.length; badge.style.display = 'flex'; } else { badge.style.display = 'none'; }
+            },
+            render() { const sec = document.getElementById('alertsSection'); const list = document.getElementById('alertsList'); const count = document.getElementById('alertCount'); if (this.lista.length === 0) { sec.style.display = 'none'; return; } sec.style.display = 'block'; count.textContent = this.lista.length; list.innerHTML = this.lista.map(a => `<div class="alert-item ${a.tipo}"><div class="alert-icon">${a.tipo === 'critical' ? '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>' : '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'}</div><div class="alert-content"><div class="alert-message">${a.msg}</div><div class="alert-time">${a.time}</div></div><button class="alert-action">${a.action}</button></div>`).join(''); }
+        };
+        
+        // ========================================
+        // MÓDULO DE NOTIFICAÇÕES CENTRAIS
+        // ========================================
+        const Notifications = { showCenter() { if (Alerts.lista.length > 0) { const list = Alerts.lista.map(a => `${a.tipo.toUpperCase()}: ${a.msg}`).join('\n'); alert(`ALERTAS ATIVOS:\n\n${list}`); } else { Toast.info('Nenhum alerta ativo'); } } };
+        
+        // ========================================
+        // DADOS
+        // ========================================
+        let dados = Store.getAll();
+        
+        // ========================================
+        // INICIALIZAÇÃO
+        // ========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            Toast.init(); InlineEdit.init(); Charts.init();
+            const hoje = Utils.getCurrentDate(); const mes = Utils.getCurrentMonth();
+            document.getElementById('dataVenda').value = hoje; document.getElementById('dataDespesa').value = hoje; document.getElementById('mesRelatorio').value = mes;
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+            document.querySelectorAll('.nav-tab').forEach(t => t.addEventListener('click', function() { document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active')); document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active')); this.classList.add('active'); document.getElementById(this.dataset.tab).classList.add('active'); }));
+            document.getElementById('searchProdutos').addEventListener('input', Utils.debounce(pesquisarProdutos, 300));
+            document.getElementById('searchVendas').addEventListener('input', Utils.debounce(pesquisarVendas, 300));
+            document.getElementById('searchDespesas').addEventListener('input', Utils.debounce(pesquisarDespesas, 300));
+            document.getElementById('produtoVenda').addEventListener('change', function() { const id = parseInt(this.value); if (id) { const p = dados.produtos.find(x => x.id === id); if (p) document.getElementById('precoVendaAtual').value = p.precoVenda.toFixed(2); } });
+            atualizarInterface();
+        });
+        
+        function atualizarInterface() { dados = Store.getAll(); atualizarTabelaEstoque(); atualizarTabelaVendas(); atualizarTabelaDespesas(); atualizarSelectProdutos(); atualizarDashboard(); atualizarEstoqueBaixo(); Charts.updateVendas(dados.vendas); Charts.updateEvolucao(dados.vendas, dados.despesas); verificarAlertas(); }
+        
+        function verificarAlertas() { if (document.getElementById('alertaEstoque').checked) Alerts.check(); }
+        
+        // ========================================
+        // ESTOQUE
+        // ========================================
+        function adicionarProduto() {
+            const cod = document.getElementById('codigo').value.trim(); const nom = document.getElementById('nome').value.trim(); const cat = document.getElementById('categoria').value; const qtd = parseInt(document.getElementById('quantidade').value) || 0; const cust = parseFloat(document.getElementById('precoCusto').value) || 0; const vend = parseFloat(document.getElementById('precoVenda').value) || 0; const min = parseInt(document.getElementById('estoqueMinimo').value) || 0; const forn = document.getElementById('fornecedor').value.trim();
+            if (!cod || !nom || !cat || cust <= 0 || vend <= 0) { Toast.error('Preencha todos os campos obrigatórios!', 'Validação'); return; }
+            if (dados.produtos.some(p => p.codigo === cod)) { Toast.error('Código já existe!', 'Validação'); return; }
+            dados.produtos.push({ id: Date.now(), codigo: cod, nome: nom, categoria: cat, quantidade: qtd, precoCusto: cust, precoVenda: vend, estoqueMinimo: min, fornecedor: forn, criadoEm: new Date().toISOString() });
+            Store.set('produtos', dados.produtos); Toast.success('Produto adicionado!'); limparFormularioProduto(); atualizarInterface();
+        }
+        function limparFormularioProduto() { ['codigo', 'nome', 'categoria', 'quantidade', 'precoCusto', 'precoVenda', 'estoqueMinimo', 'fornecedor'].forEach(i => document.getElementById(i).value = ''); }
+        function excluirProduto(id) { Modal.show('Excluir', 'Tem certeza?', () => { dados.produtos = dados.produtos.filter(p => p.id !== id); Store.set('produtos', dados.produtos); Toast.success('Excluído!'); atualizarInterface(); }); }
+        
+        function atualizarTabelaEstoque(produtosFiltrados = null) {
+            const prods = produtosFiltrados || dados.produtos; const tbody = document.getElementById('tabelaEstoque');
+            if (prods.length === 0) { tbody.innerHTML = '<tr><td colspan="9"><div class="empty-state"><svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg><div class="empty-state-title">Nenhum produto</div></div></td></tr>'; return; }
+            tbody.innerHTML = prods.map(p => { const m = Utils.calculateMargin(p.precoCusto, p.precoVenda); const st = p.quantidade === 0 ? { t: 'Sem Estoque', c: 'badge-danger' } : p.quantidade <= p.estoqueMinimo ? { t: 'Baixo', c: 'badge-danger' } : p.quantidade <= p.estoqueMinimo * 2 ? { t: 'Médio', c: 'badge-warning' } : { t: 'Alto', c: 'badge-success' }; return `<tr data-id="${p.id}" data-tipo="produto"><td class="font-semibold">${p.codigo}</td><td>${p.nome}</td><td>${p.categoria}</td><td class="editable-col" data-field="quantidade">${p.quantidade}</td><td class="text-muted">${Utils.formatCurrency(p.precoCusto)}</td><td class="editable-col" data-field="precoVenda">${Utils.formatCurrency(p.precoVenda)}</td><td><span class="badge ${parseFloat(m) >= 30 ? 'badge-success' : parseFloat(m) >= 15 ? 'badge-warning' : 'badge-danger'}">${m}%</span></td><td><span class="badge ${st.c}">${st.t}</span></td><td><div class="action-buttons"><button class="action-btn delete" onclick="excluirProduto(${p.id})" title="Excluir"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div></td></tr>`; }).join('');
+            InlineEdit.init();
+        }
+        
+        function pesquisarProdutos() {
+            const t = document.getElementById('searchProdutos').value.toLowerCase(); const f = FilterPanel.filters.estoque; let r = dados.produtos.filter(p => p.nome.toLowerCase().includes(t) || p.codigo.toLowerCase().includes(t) || p.categoria.toLowerCase().includes(t));
+            if (f.categoria && f.categoria.length > 0) r = r.filter(p => f.categoria.includes(p.categoria));
+            if (f.status && f.status.length > 0) { r = r.filter(p => { const s = p.quantidade <= p.estoqueMinimo ? 'critico' : p.quantidade <= p.estoqueMinimo * 2 ? 'baixo' : 'normal'; return f.status.includes(s); }); }
+            atualizarTabelaEstoque(r);
+        }
+        
+        // ========================================
+        // VENDAS
+        // ========================================
+        function registrarVenda() {
+            const d = document.getElementById('dataVenda').value; const pid = parseInt(document.getElementById('produtoVenda').value); const q = parseInt(document.getElementById('qtyVenda').value) || 0; const pv = parseFloat(document.getElementById('precoVendaAtual').value) || 0; const c = document.getElementById('cliente').value.trim(); const fp = document.getElementById('formaPagamento').value;
+            if (!d || !pid || q <= 0 || pv <= 0) { Toast.error('Preencha os campos obrigatórios!', 'Validação'); return; }
+            const p = dados.produtos.find(x => x.id === pid); if (!p) { Toast.error('Produto não encontrado!', 'Erro'); return; }
+            if (p.quantidade < q) { Toast.error(`Estoque insuficiente! Disp: ${p.quantidade}`, 'Estoque'); return; }
+            const v = { id: Date.now(), data: d, produtoId: pid, produtoNome: p.nome, produtoCategoria: p.categoria, quantidade: q, precoVenda: pv, precoCusto: p.precoCusto, total: q * pv, custoTotal: q * p.precoCusto, lucro: (q * pv) - (q * p.precoCusto), cliente: c, formaPagamento: fp, registradoEm: new Date().toISOString() };
+            dados.vendas.push(v); p.quantidade -= q; Store.set('vendas', dados.vendas); Store.set('produtos', dados.produtos);
+            Toast.success(`Venda registrada! Lucro: ${Utils.formatCurrency(v.lucro)}`, 'Vendas'); limparFormularioVenda(); atualizarInterface();
+        }
+        function limparFormularioVenda() { ['produtoVenda', 'qtyVenda', 'precoVendaAtual', 'cliente'].forEach(i => document.getElementById(i).value = ''); }
+        function excluirVenda(id) { Modal.show('Excluir Venda', 'O estoque será restaurado.', () => { const v = dados.vendas.find(x => x.id === id); if (v) { const p = dados.produtos.find(x => x.id === v.produtoId); if (p) p.quantidade += v.quantidade; } dados.vendas = dados.vendas.filter(x => x.id !== id); Store.set('vendas', dados.vendas); Store.set('produtos', dados.produtos); Toast.success('Excluída!'); atualizarInterface(); }); }
+        
+        function atualizarTabelaVendas(vendasFiltradas = null) {
+            const vs = (vendasFiltradas || [...dados.vendas].sort((a, b) => new Date(b.data) - new Date(a.data))); const tbody = document.getElementById('tabelaVendas');
+            if (vs.length === 0) { tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg><div class="empty-state-title">Nenhuma venda</div></div></td></tr>'; return; }
+            tbody.innerHTML = vs.map(v => `<tr><td>${Utils.formatDate(v.data)}</td><td>${v.produtoNome}</td><td>${v.quantidade}</td><td class="font-semibold">${Utils.formatCurrency(v.total)}</td><td class="${v.lucro >= 0 ? 'text-success' : 'text-danger'}">${Utils.formatCurrency(v.lucro)}</td><td>${v.cliente || '-'}</td><td><span class="badge badge-gray">${v.formaPagamento}</span></td><td><div class="action-buttons"><button class="action-btn delete" onclick="excluirVenda(${v.id})" title="Excluir"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div></td></tr>`).join('');
+        }
+        
+        function pesquisarVendas() {
+            const t = document.getElementById('searchVendas').value.toLowerCase(); const f = FilterPanel.filters.vendas; let r = dados.vendas.filter(v => v.produtoNome.toLowerCase().includes(t) || (v.cliente && v.cliente.toLowerCase().includes(t)) || Utils.formatDate(v.data).toLowerCase().includes(t));
+            if (f.mes && f.mes.length > 0) r = r.filter(v => { const m = new Date(v.data + 'T00:00:00').getMonth() + 1; return f.mes.includes(String(m)); });
+            if (f.pagamento && f.pagamento.length > 0) r = r.filter(v => f.pagamento.includes(v.formaPagamento));
+            atualizarTabelaVendas(r);
+        }
+        
+        // ========================================
+        // DESPESAS
+        // ========================================
+        function adicionarDespesa() {
+            const d = document.getElementById('dataDespesa').value; const desc = document.getElementById('descricaoDespesa').value.trim(); const cat = document.getElementById('categoriaDespesa').value; const val = parseFloat(document.getElementById('valorDespesa').value) || 0; const fp = document.getElementById('pagamentoDespesa').value;
+            if (!d || !desc || !cat || val <= 0) { Toast.error('Preencha os campos obrigatórios!', 'Validação'); return; }
+            dados.despesas.push({ id: Date.now(), data: d, descricao: desc, categoria: cat, valor: val, formaPagamento: fp, registradaEm: new Date().toISOString() });
+            Store.set('despesas', dados.despesas); Toast.success('Despesa registrada!'); limparFormularioDespesa(); atualizarInterface();
+        }
+        function limparFormularioDespesa() { ['descricaoDespesa', 'valorDespesa'].forEach(i => document.getElementById(i).value = ''); }
+        function excluirDespesa(id) { Modal.show('Excluir Despesa', 'Tem certeza?', () => { dados.despesas = dados.despesas.filter(d => d.id !== id); Store.set('despesas', dados.despesas); Toast.success('Excluída!'); atualizarInterface(); }); }
+        
+        function atualizarTabelaDespesas(despesasFiltradas = null) {
+            const ds = (despesasFiltradas || [...dados.despesas].sort((a, b) => new Date(b.data) - new Date(a.data))); const tbody = document.getElementById('tabelaDespesas');
+            if (ds.length === 0) { tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg><div class="empty-state-title">Nenhuma despesa</div></div></td></tr>'; return; }
+            tbody.innerHTML = ds.map(d => `<tr><td>${Utils.formatDate(d.data)}</td><td>${d.descricao}</td><td><span class="badge badge-gray">${d.categoria}</span></td><td class="text-danger font-semibold">${Utils.formatCurrency(d.valor)}</td><td>${d.formaPagamento}</td><td><div class="action-buttons"><button class="action-btn delete" onclick="excluirDespesa(${d.id})" title="Excluir"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button></div></td></tr>`).join('');
+        }
+        
+        function pesquisarDespesas() {
+            const t = document.getElementById('searchDespesas').value.toLowerCase(); const f = FilterPanel.filters.despesas; let r = dados.despesas.filter(d => d.descricao.toLowerCase().includes(t) || d.categoria.toLowerCase().includes(t));
+            if (f.categoria && f.categoria.length > 0) r = r.filter(d => f.categoria.includes(d.categoria));
+            atualizarTabelaDespesas(r);
+        }
+        
+        // ========================================
+        // DASHBOARD
+        // ========================================
+        function atualizarDashboard() {
+            const hoje = new Date(); const m = hoje.getMonth(); const a = hoje.getFullYear(); const vm = dados.vendas.filter(v => { const d = new Date(v.data + 'T00:00:00'); return d.getMonth() === m && d.getFullYear() === a; }); const dm = dados.despesas.filter(d => { const dt = new Date(d.data + 'T00:00:00'); return dt.getMonth() === m && dt.getFullYear() === a; });
+            const fat = vm.reduce((s, v) => s + v.total, 0); const cust = vm.reduce((s, v) => s + v.custoTotal, 0); const des = dm.reduce((s, d) => s + d.valor, 0); const ve = dados.produtos.reduce((s, p) => s + (p.quantidade * p.precoCusto), 0); const ll = fat - cust - des;
+            document.getElementById('faturamentoMes').textContent = Utils.formatCurrency(fat); document.getElementById('despesasMes').textContent = Utils.formatCurrency(des); document.getElementById('lucroLiquido').textContent = Utils.formatCurrency(ll); document.getElementById('lucroLiquido').className = 'metric-value ' + (ll >= 0 ? 'text-success' : 'text-danger'); document.getElementById('valorEstoque').textContent = Utils.formatCurrency(ve);
+        }
+        
+        function atualizarEstoqueBaixo() {
+            const pb = dados.produtos.filter(p => p.quantidade <= p.estoqueMinimo); const tbody = document.getElementById('estoqueBaixoTable');
+            if (pb.length === 0) { tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state" style="padding: var(--spacing-lg);"><div class="text-success font-semibold">Tudo em ordem!</div><div class="text-muted" style="font-size: var(--font-size-sm);">Nenhum produto com estoque baixo.</div></div></td></tr>'; return; }
+            tbody.innerHTML = pb.map(p => `<tr><td class="font-semibold">${p.nome}</td><td>${p.categoria}</td><td class="${p.quantidade === 0 ? 'text-danger font-semibold' : ''}">${p.quantidade}</td><td>${p.estoqueMinimo}</td><td><span class="badge ${p.quantidade === 0 ? 'badge-danger' : 'badge-warning'}">${p.quantidade === 0 ? 'Sem Estoque' : 'Baixo'}</span></td><td><button class="btn btn-secondary" style="padding: 4px 8px; font-size: var(--font-size-xs);" onclick="InlineEdit.startEdit(document.querySelector('#tabelaEstoque tr[data-id=\"${p.id}\"] .editable-col'))">Repor</button></td></tr>`).join('');
+        }
+        
+        // ========================================
+        // RELATÓRIOS
+        // ========================================
+        function gerarRelatorio() {
+            const ma = document.getElementById('mesRelatorio').value; if (!ma) { Toast.error('Selecione um mês/ano!', 'Validação'); return; }
+            const [ano, mes] = ma.split('-').map(Number); const vp = dados.vendas.filter(v => { const d = new Date(v.data + 'T00:00:00'); return d.getMonth() + 1 === mes && d.getFullYear() === ano; }); const dp = dados.despesas.filter(d => { const dt = new Date(d.data + 'T00:00:00'); return dt.getMonth() + 1 === mes && dt.getFullYear() === ano; });
+            const tv = vp.reduce((s, v) => s + v.total, 0); const tc = vp.reduce((s, v) => s + v.custoTotal, 0); const td = dp.reduce((s, d) => s + d.valor, 0); const lb = tv - tc; const ll = lb - td;
+            document.getElementById('relVendas').textContent = Utils.formatCurrency(tv); document.getElementById('relDespesas').textContent = Utils.formatCurrency(td); document.getElementById('relLucroBruto').textContent = Utils.formatCurrency(lb); document.getElementById('relLucroLiquido').textContent = Utils.formatCurrency(ll); document.getElementById('relLucroLiquido').className = 'metric-value ' + (ll >= 0 ? 'text-success' : 'text-danger');
+            const vpc = {}; vp.forEach(v => { vpc[v.produtoCategoria] = vpc[v.produtoCategoria] || { q: 0, f: 0 }; vpc[v.produtoCategoria].q += v.quantidade; vpc[v.produtoCategoria].f += v.total; });
+            document.getElementById('vendasPorCategoria').innerHTML = Object.entries(vpc).map(([c, d]) => `<tr><td>${c}</td><td>${d.q}</td><td>${Utils.formatCurrency(d.f)}</td><td>${tv > 0 ? (d.f / tv * 100).toFixed(1) : 0}%</td></tr>`).join('');
+            const dpc = {}; dp.forEach(d => { dpc[d.categoria] = (dpc[d.categoria] || 0) + d.valor; });
+            document.getElementById('despesasPorCategoria').innerHTML = Object.entries(dpc).map(([c, v]) => `<tr><td>${c}</td><td>${Utils.formatCurrency(v)}</td><td>${td > 0 ? (v / td * 100).toFixed(1) : 0}%</td></tr>`).join('');
+            document.getElementById('relatorioResultado').style.display = 'block'; document.getElementById('btnExportarPDF').style.display = 'inline-flex'; Toast.success(`Relatório de ${Utils.formatMonthYear(ma)} gerado!`, 'Relatórios');
+        }
+        
+        // ========================================
+        // SELECTS
+        // ========================================
+        function atualizarSelectProdutos() {
+            const s = document.getElementById('produtoVenda'); s.innerHTML = '<option value="">Selecione...</option>';
+            dados.produtos.filter(p => p.quantidade > 0).forEach(p => { s.innerHTML += `<option value="${p.id}">${p.codigo} - ${p.nome} (${p.quantidade})</option>`; });
+        }
+        
+        // ========================================
+        // EXPORTAÇÃO PDF
+        // ========================================
+        function gerarPDF(titulo, dados, colunas) {
+            const { jsPDF } = window.jspdf; const doc = new jsPDF(); doc.setFontSize(18); doc.setTextColor(30, 58, 95); doc.text(titulo, 14, 20); doc.setFontSize(10); doc.setTextColor(100); doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 14, 28);
+            const head = [colunas.map(c => c.title)]; const body = dados.map(row => colunas.map(c => row[c.field])); doc.autoTable({ head, body, startY: 35, theme: 'striped', headStyles: { fillColor: [30, 58, 95] } }); doc.save(`${titulo.replace(/\s/g, '_')}.pdf`); Toast.success('PDF exportado!'); }
+        function exportarProdutosPDF() { if (dados.produtos.length === 0) { Toast.warning('Nenhum produto!', 'Exportação'); return; } gerarPDF('Relatório de Produtos', dados.produtos, [{ title: 'Código', field: 'codigo' }, { title: 'Nome', field: 'nome' }, { title: 'Categoria', field: 'categoria' }, { title: 'Qtd', field: 'quantidade' }, { title: 'Custo', field: 'precoCusto' }, { title: 'Venda', field: 'precoVenda' }]); }
+        function exportarVendasPDF() { if (dados.vendas.length === 0) { Toast.warning('Nenhuma venda!', 'Exportação'); return; } gerarPDF('Relatório de Vendas', dados.vendas.map(v => ({ ...v, precoVenda: Utils.formatCurrency(v.precoVenda), total: Utils.formatCurrency(v.total), lucro: Utils.formatCurrency(v.lucro) })), [{ title: 'Data', field: 'data' }, { title: 'Produto', field: 'produtoNome' }, { title: 'Qtd', field: 'quantidade' }, { title: 'Total', field: 'total' }, { title: 'Lucro', field: 'lucro' }]); }
+        function exportarRelatorioPDF() { const ma = document.getElementById('mesRelatorio').value; if (!ma) return; gerarPDF(`Relatório ${Utils.formatMonthYear(ma)}`, [], []); }
+        
+        // ========================================
+        // BACKUP
+        // ========================================
+        function fazerBackup() { const b = { versao: '1.0', data: new Date().toISOString(), dados: dados }; const bl = new Blob([JSON.stringify(b, null, 2)], { type: 'application/json' }); const u = URL.createObjectURL(bl); const a = document.createElement('a'); a.href = u; a.download = `backup_gestao_${new Date().toISOString().split('T')[0]}.json`; a.click(); URL.revokeObjectURL(u); Toast.success('Backup realizado!'); }
+        function restaurarBackup(i) { const f = i.files[0]; if (!f) return; const r = new FileReader(); r.onload = function(e) { try { const b = JSON.parse(e.target.result); if (!b.dados || !b.dados.produtos) throw new Error(); Modal.show('Restaurar Backup', 'Substituir dados atuais?', () => { dados = b.dados; Store.saveAll(dados); atualizarInterface(); Toast.success('Backup restaurado!'); }); } catch (err) { Toast.error('Arquivo inválido!', 'Erro'); } }; r.readAsText(f); i.value = ''; }
+        function limparDados() { Modal.show('Limpar Dados', 'EXCLUIR TODOS OS DADOS? Esta ação não pode ser desfeita.', () => { dados = { produtos: [], vendas: [], despesas: [] }; Store.saveAll(dados); atualizarInterface(); Toast.success('Dados limpos!'); }); }
+    </script>
+</body>
+</html>
